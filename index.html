@@ -1,0 +1,2114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gloves &amp; Goggles — Villain Supply Prototype</title>
+<style>
+:root{
+  --bg:#100f0f; --panel:#191818; --panel-2:#211f1e; --line:#38332f;
+  --ink:#ece7e2; --ink-dim:#a29a93; --ink-faint:#6d6560;
+  --accent:#d1554f; --accent-2:#7fa38c; --warn:#d9a13a; --bad:#a83c33;
+  --hazard:#d8b23a;
+  --r:10px;
+  --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --display:"Iowan Old Style",Palatino,Georgia,serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--font);
+  font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(1100px 460px at 50% -12%, #261c1b 0%, transparent 72%);
+  min-height:100vh;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; margin:0}
+button{font:inherit; color:inherit; cursor:pointer; border:none; background:none; text-align:left}
+.mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+
+#app{max-width:1180px; margin:0 auto; padding:10px 12px 92px}
+header{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:9px 13px; background:linear-gradient(180deg,#232020,#181616);
+  border:1px solid var(--line); border-radius:var(--r); margin-bottom:10px;
+  position:sticky; top:6px; z-index:40; box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+header::after{
+  content:''; position:absolute; left:0; right:0; bottom:-1px; height:3px;
+  border-radius:0 0 var(--r) var(--r);
+  background:repeating-linear-gradient(115deg,var(--hazard) 0 9px,#1a1715 9px 18px);
+  opacity:.5;
+}
+.brand{font-family:var(--display); font-size:19px; letter-spacing:.3px; white-space:nowrap}
+.brand small{display:block; font-family:var(--font); font-size:10px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-faint)}
+.stats{display:flex; gap:6px; flex-wrap:wrap; margin-left:auto; align-items:center}
+.stat{background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+  padding:5px 9px; min-width:66px; position:relative}
+.stat b{display:block; font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:15px; line-height:1.15}
+.stat span{font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint)}
+.stat.cash b{color:var(--accent)}
+.stat.sch b{color:#8fa9c4}
+.stat.heat b{color:var(--warn)}
+.stat.heat.hot b{color:var(--accent)}
+.stat.heat.crit b{color:#ff7a6e}
+.pulse{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.22)}100%{transform:scale(1)}}
+.iconbtn{background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+  padding:7px 10px; font-size:13px; color:var(--ink-dim)}
+.iconbtn:hover{color:var(--ink); border-color:var(--accent)}
+
+.grid{display:grid; grid-template-columns:1.12fr .88fr; gap:10px; align-items:start}
+@media(max-width:900px){ .grid{grid-template-columns:1fr} }
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--r);
+  overflow:hidden; margin-bottom:10px}
+.phead{display:flex; align-items:center; gap:8px; padding:8px 12px;
+  background:var(--panel-2); border-bottom:1px solid var(--line)}
+.phead h2{font-size:13.5px; letter-spacing:.04em}
+.phead .hint{margin-left:auto; font-size:11px; color:var(--ink-faint); text-align:right}
+.pbody{padding:12px}
+
+/* ---------- site plan ---------- */
+#plan{display:block; width:100%; height:auto}
+.planwrap{padding:10px 12px 6px}
+.stagerow{display:flex; gap:8px; align-items:baseline; padding:0 12px 10px; flex-wrap:wrap}
+.stagerow .nm{font-family:var(--display); font-size:14px}
+.stagerow .sub{font-size:11px; color:var(--ink-faint)}
+.baychip{font-size:10.5px; padding:2px 8px; border-radius:20px; border:1px dashed var(--line);
+  color:var(--ink-faint)}
+.baychip.on{border-style:solid; border-color:#4d6b57; color:var(--accent-2)}
+
+/* ---------- counter ---------- */
+#counter{min-height:300px}
+.empty{display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; color:var(--ink-faint); gap:11px; padding:14px 8px}
+.empty .big{font-size:38px; opacity:.8}
+.bell{width:180px; height:4px; background:var(--panel-2); border-radius:3px; overflow:hidden}
+.bell i{display:block; height:100%; background:var(--accent); opacity:.55; transition:width .12s linear}
+
+.crates{display:flex; gap:8px; justify-content:center; flex-wrap:wrap}
+.crate{width:56px; height:52px; border-radius:9px; font-size:26px; display:grid; place-items:center;
+  background:linear-gradient(180deg,#2a2422,#1f1b19); border:1px solid var(--line); transition:.12s}
+.crate:hover:not(:disabled){border-color:var(--accent); transform:translateY(-2px)}
+.crate:disabled{opacity:.28; cursor:not-allowed}
+
+.cust{display:flex; gap:11px; align-items:flex-start}
+.avatar{width:46px;height:46px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-size:23px; background:var(--panel-2); border:1px solid var(--line)}
+.avatar.leg{border-color:var(--accent); box-shadow:0 0 0 2px rgba(209,85,79,.18)}
+.cust .who{font-family:var(--display); font-size:17px; line-height:1.2}
+.cust .role{font-size:11px; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase}
+.cust .line{font-size:12.5px; color:var(--ink-dim); font-style:italic; margin-top:3px}
+.tag{display:inline-block; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  padding:2px 7px; border-radius:20px; border:1px solid var(--line); color:var(--ink-dim);
+  margin-left:6px; vertical-align:2px}
+.tag.r0{border-color:#47413c; color:var(--ink-faint)}
+.tag.r1{border-color:#5a5148; color:#b6a897}
+.tag.r2{border-color:#4d6b57; color:var(--accent-2)}
+.tag.r3{border-color:#8a6a2e; color:var(--warn)}
+.tag.r4{border-color:var(--accent); color:#f0958e}
+
+.brief{margin-top:11px; padding:10px 11px; border-radius:8px; background:#141212;
+  border:1px solid var(--line); border-left:3px solid var(--accent)}
+.brief .sc{font-size:14px}
+.brief .needs{display:flex; gap:5px; flex-wrap:wrap; margin-top:7px}
+.chip{font-size:11px; padding:2px 8px; border-radius:20px; background:#221f1d;
+  border:1px solid var(--line); color:var(--ink-faint)}
+.chip.met{border-color:#4d6b57; color:var(--accent-2); background:#1b231d}
+.chip.tagd{border-color:#5a4a46; color:#c99a95}
+.nemesis{font-size:11.5px; color:var(--ink-faint); margin-top:7px}
+.nemesis b{color:var(--warn); font-weight:600}
+
+.pickrow{display:flex; gap:9px; align-items:center; padding:7px 8px; background:var(--panel-2);
+  border:1px solid var(--line); border-radius:8px; margin-bottom:6px}
+.pickrow.sel{border-color:var(--accent); background:#241d1c}
+.pickrow .g{font-size:19px; width:26px; text-align:center; flex:none}
+.pickrow .t{flex:1; min-width:0}
+.pickrow .t b{display:block; font-size:13.5px; font-family:var(--display); font-weight:600}
+.pickrow .t small{font-size:11px; color:var(--ink-faint)}
+.stepper{display:flex; align-items:center; gap:4px; flex:none}
+.stepper .n{font-family:var(--mono); min-width:34px; text-align:center; font-size:13px}
+.sq{width:28px;height:28px;border:1px solid var(--line);border-radius:6px;background:#161413;
+  display:grid;place-items:center;font-size:15px;line-height:1}
+.sq:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.sq:disabled{opacity:.28;cursor:not-allowed}
+
+.summary{margin-top:11px; padding:11px; border-radius:8px; background:#141212; border:1px solid var(--line)}
+.sline{display:flex; gap:8px; align-items:baseline; font-size:12.5px; color:var(--ink-dim)}
+.sline b{font-family:var(--mono); color:var(--ink)}
+.sline .r{margin-left:auto; font-family:var(--mono)}
+.odds{margin-top:9px}
+.odds .lab{display:flex; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-faint)}
+.odds .lab b{margin-left:auto; font-family:var(--mono); font-size:14px; letter-spacing:0}
+.bar{height:6px; background:#0c0b0b; border-radius:4px; overflow:hidden; margin-top:5px}
+.bar i{display:block; height:100%; background:var(--accent-2); transition:width .25s}
+.bar.odds i{background:linear-gradient(90deg,var(--bad),var(--warn),var(--accent-2))}
+.bar.bud i{background:var(--accent)}
+.bar.heat i{background:linear-gradient(90deg,var(--accent-2),var(--warn),var(--accent))}
+.synbox{display:flex; gap:6px; flex-wrap:wrap; margin-top:9px}
+.syn{font-size:11.5px; padding:3px 9px; border-radius:20px; background:#1d2620;
+  border:1px solid #4d6b57; color:var(--accent-2)}
+.syn.unk{background:#241d1c; border-color:var(--accent); color:#f0958e}
+
+.actions{display:flex; gap:7px; flex-wrap:wrap; margin-top:11px}
+.btn{background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+  padding:9px 13px; font-size:13.5px; transition:.12s; text-align:center}
+.btn:hover:not(:disabled){border-color:var(--accent); transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(180deg,#58231f,#3a1815); border-color:#7d3530; color:#f6cdc9}
+.btn.primary:hover:not(:disabled){border-color:var(--accent); box-shadow:0 0 16px rgba(209,85,79,.22)}
+.btn.alt{border-color:#4d6b57; color:#a9c9b6}
+.btn.ghost{color:var(--ink-dim)}
+.btn:disabled{opacity:.34; cursor:not-allowed}
+.btn .sub{display:block; font-size:10px; color:var(--ink-faint); letter-spacing:.05em}
+
+.patience{display:flex; gap:4px; margin-top:9px; align-items:center; font-size:10px;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.pip{width:8px;height:8px;border-radius:50%;background:var(--accent-2)}
+.pip.out{background:#332c28}
+
+.histline{font-size:11.5px; color:var(--ink-faint); padding:2px 0; border-bottom:1px solid #221f1d}
+.histline b{color:var(--ink-dim); font-weight:600}
+.histline.good b{color:var(--accent-2)}
+.histline.bad b{color:var(--accent)}
+.row .t .histline b{display:inline; font-family:var(--font); font-size:inherit; white-space:normal}
+
+/* ---------- heat ---------- */
+#heatpanel .pbody{padding:11px 12px}
+.heatrow{display:flex; align-items:baseline; gap:8px}
+.heatrow .nm{font-family:var(--display); font-size:14px}
+.heatrow .v{margin-left:auto; font-family:var(--mono); font-size:14px}
+.heatnote{font-size:12px; color:var(--ink-dim); margin-top:7px}
+.heatacts{display:flex; gap:6px; flex-wrap:wrap; margin-top:9px}
+.mini{font-size:11.5px; padding:5px 9px; border:1px solid var(--line); border-radius:6px;
+  background:#161413; transition:.12s}
+.mini:hover:not(:disabled){border-color:var(--accent); color:var(--accent)}
+.mini:disabled{opacity:.3; cursor:not-allowed}
+.mini.go{border-color:#5d3a36; color:#e09a94}
+.mini.ok{border-color:#4d6b57; color:var(--accent-2)}
+
+/* ---------- tabs / lists ---------- */
+.tabs{display:flex; gap:2px; background:var(--panel-2); border-bottom:1px solid var(--line); overflow-x:auto}
+.tabs button{padding:9px 11px; font-size:12px; letter-spacing:.05em; color:var(--ink-faint);
+  border-bottom:2px solid transparent; white-space:nowrap}
+.tabs button.on{color:var(--accent); border-bottom-color:var(--accent); background:var(--panel)}
+.tabs .badge{display:inline-block; min-width:15px; padding:0 4px; margin-left:5px; border-radius:9px;
+  background:var(--accent); color:#1a1210; font-size:10px; font-weight:700; font-family:var(--mono)}
+.tabbody{padding:11px; max-height:min(64vh,620px); overflow-y:auto}
+.tabbody::-webkit-scrollbar{width:8px}
+.tabbody::-webkit-scrollbar-thumb{background:#332c28; border-radius:4px}
+
+.row{display:flex; gap:9px; align-items:center; padding:8px; background:var(--panel-2);
+  border:1px solid var(--line); border-radius:8px; margin-bottom:6px}
+.row .g{font-size:20px; width:27px; text-align:center; flex:none}
+.row .t{flex:1; min-width:0}
+.row .t b{display:block; font-family:var(--display); font-weight:600; font-size:13.5px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.row .t small{color:var(--ink-faint); font-size:11px; display:block}
+.row .btns{display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end}
+.muted{color:var(--ink-faint); font-size:12.5px; text-align:center; padding:16px 8px; line-height:1.6}
+.sechead{font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+  margin:13px 0 7px}
+.sechead:first-child{margin-top:0}
+
+.mats{display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:6px; margin-bottom:4px}
+.mat{padding:7px 4px; text-align:center; border-radius:7px; background:var(--panel-2);
+  border:1px solid var(--line)}
+.mat .e{font-size:18px; display:block; line-height:1.1}
+.mat .n{display:block; font-size:9.5px; color:var(--ink-faint); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap}
+.mat .c{display:block; font-family:var(--mono); font-size:14px}
+.mat.zero{opacity:.45}
+.mat.comp{border-color:#4a5c6b}
+.mat.comp .c{color:#8fa9c4}
+
+.up{display:flex; gap:9px; align-items:center; padding:9px; background:var(--panel-2);
+  border:1px solid var(--line); border-radius:8px; margin-bottom:6px; width:100%; transition:.12s}
+.up:hover:not(:disabled){border-color:var(--accent)}
+.up:disabled{opacity:.46; cursor:not-allowed}
+.up.locked{opacity:.4; font-style:italic}
+.up.exp{border-color:#6b5a2e; background:#231f16}
+.up .t b{display:block; font-family:var(--display); font-size:13.5px}
+.up .t small{color:var(--ink-dim); font-size:11.5px; display:block; line-height:1.35}
+.up .cost{margin-left:auto; font-family:var(--mono); color:var(--accent); white-space:nowrap; font-size:12.5px}
+.up:disabled .cost{color:var(--ink-faint)}
+
+.cat{display:grid; grid-template-columns:repeat(auto-fill,minmax(86px,1fr)); gap:6px}
+.cell{padding:8px 4px; text-align:center; border-radius:7px; font-size:11px;
+  background:var(--panel-2); border:1px solid var(--line)}
+.cell.got{border-color:#5d3a36}
+.cell.got .n{color:var(--accent)}
+.cell .e{font-size:19px; display:block}
+.cell .n{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.cell .c{font-family:var(--mono); font-size:10px; color:var(--ink-faint)}
+.cell.miss{opacity:.4}
+.cell.miss .e{filter:grayscale(1)}
+.inter{border:1px solid var(--line); background:#1c1a19; border-radius:8px; padding:9px 10px; margin-bottom:6px}
+.inter b{font-size:13px; font-family:var(--display)}
+.inter p{margin:3px 0 0; font-size:11.5px; color:var(--ink-dim); line-height:1.4}
+.inter.got{border-color:#4d6b57}
+.inter.miss{opacity:.5; font-style:italic}
+
+/* ---------- log / popups / toast ---------- */
+#log{position:fixed; left:0; right:0; bottom:0; z-index:50;
+  background:linear-gradient(180deg,rgba(16,15,15,.86),rgba(16,15,15,.99));
+  border-top:1px solid var(--line); backdrop-filter:blur(8px)}
+#log .inner{max-width:1180px; margin:0 auto; padding:7px 13px; display:flex; align-items:center; gap:10px}
+#logtext{flex:1; font-size:12.5px; color:var(--ink-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+#logtext b{color:var(--accent); font-weight:600}
+#logtext .neg{color:#e08a7a}
+#logtext .pos{color:var(--accent-2)}
+#logfull{display:none; max-width:1180px; margin:0 auto; padding:0 13px 10px;
+  max-height:190px; overflow-y:auto; font-size:12.5px; line-height:1.65; color:var(--ink-dim)}
+#logfull.open{display:block}
+#logfull div{padding:1px 0; border-bottom:1px solid #201d1c}
+
+.pop{position:fixed; pointer-events:none; z-index:90; font-family:var(--mono); font-weight:700;
+  font-size:16px; color:var(--accent-2); text-shadow:0 2px 8px #000; animation:rise 1s ease-out forwards}
+.pop.neg{color:var(--accent)}
+.pop.cash{color:var(--accent)}
+@keyframes rise{0%{opacity:0;transform:translateY(4px) scale(.85)}
+  18%{opacity:1;transform:translateY(-6px) scale(1.05)}
+  100%{opacity:0;transform:translateY(-38px) scale(1)}}
+
+#toast{position:fixed; top:72px; left:50%; transform:translateX(-50%); z-index:95;
+  display:flex; flex-direction:column; gap:7px; align-items:center; pointer-events:none; width:min(440px,92vw)}
+.toast{background:linear-gradient(180deg,#2b2321,#211b19); border:1px solid var(--accent);
+  border-radius:9px; padding:10px 14px; font-size:13px; text-align:left; width:100%;
+  box-shadow:0 12px 34px rgba(0,0,0,.6); animation:tin .3s ease; line-height:1.45}
+.toast>b:first-child{color:var(--accent); font-family:var(--display); display:block; font-size:15px; margin-bottom:2px}
+.toast b{color:#f0958e; font-weight:600}
+.toast.bad{border-color:var(--bad)} .toast.bad>b:first-child{color:#e08a7a}
+.toast.good{border-color:#4d6b57} .toast.good>b:first-child{color:var(--accent-2)}
+.toast.big{border-width:2px}
+@keyframes tin{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+
+/* ---------- horizon ---------- */
+.hz{padding:12px; background:linear-gradient(180deg,#241d2a,#1a1620); border:1px solid #4a3a5e; border-radius:var(--r)}
+.hz h3{color:#c1a6d8; font-size:15px}
+.hz p{margin:5px 0 9px; font-size:12.5px; color:var(--ink-dim); line-height:1.5}
+.hz .bar i{background:linear-gradient(90deg,#6a5a8a,#c1a6d8)}
+.hz .num{font-family:var(--mono); font-size:12px; margin-top:6px; color:var(--ink-dim)}
+.hz .btn{margin-top:10px; width:100%; border-color:#6a5a8a; color:#d3bce8}
+
+.warnbar{padding:9px 12px; background:#2c1714; border:1px solid var(--bad); border-radius:var(--r);
+  margin-bottom:10px; font-size:13px; display:flex; gap:10px; align-items:center}
+.warnbar b{color:#ff8e82}
+.warnbar .rt{margin-left:auto; font-family:var(--mono); font-size:16px; color:#ff8e82}
+
+@media(max-width:420px){
+  #app{padding:8px 8px 92px}
+  .brand{font-size:17px}
+  .stat{min-width:58px; padding:4px 7px}
+  .stat b{font-size:13.5px}
+  .tabs button{padding:7px 6px; font-size:10.5px; letter-spacing:0}
+  .tabs .badge{min-width:13px; margin-left:3px; font-size:9px}
+  .pickrow .t small{font-size:10.5px}
+  .hz p{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.wk{animation:wk 3.4s ease-in-out infinite}
+@keyframes wk{0%,100%{transform:translateX(0)}50%{transform:translateX(14px)}}
+@media(max-width:560px){ #toast{top:118px} }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">Gloves &amp; Goggles<small id="brandsub">Villain Supply &middot; Prototype</small></div>
+    <div class="stats">
+      <div class="stat cash"><b id="s-cash">40</b><span>Cash</span></div>
+      <div class="stat"><b id="s-rep">0</b><span>Repute</span></div>
+      <div class="stat heat" id="heatstat"><b id="s-heat">0</b><span>Heat</span></div>
+      <div class="stat sch"><b id="s-sch">0</b><span>Schem.</span></div>
+      <div class="stat"><b id="s-day">1</b><span>Day</span></div>
+      <button class="iconbtn" id="mutebtn" title="Sound">&#9834;</button>
+      <button class="iconbtn" id="helpbtn" title="How to play">?</button>
+    </div>
+  </header>
+
+  <div id="warn"></div>
+
+  <div class="grid">
+    <div>
+      <div class="panel" id="sitepanel">
+        <div class="planwrap"><svg id="plan" viewBox="0 0 620 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <div class="stagerow" id="stagerow"></div>
+      </div>
+      <div class="panel">
+        <div class="phead"><h2>The Counter</h2><span class="hint" id="counterhint"></span></div>
+        <div class="pbody" id="counter"></div>
+      </div>
+      <div class="panel" id="heatpanel">
+        <div class="phead"><h2>Attention</h2><span class="hint" id="heathint"></span></div>
+        <div class="pbody" id="heatbody"></div>
+      </div>
+      <div id="horizon"></div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs" id="tabs">
+        <button data-tab="bench" class="on">Bench<span class="badge" id="b-bench">0</span></button>
+        <button data-tab="shelf">Shelf<span class="badge" id="b-shelf">0</span></button>
+        <button data-tab="clients">Clients<span class="badge" id="b-cli">0</span></button>
+        <button data-tab="shop">Premises</button>
+        <button data-tab="files">Files</button>
+      </div>
+      <div class="tabbody" id="tabbody"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="log">
+  <div id="logfull"></div>
+  <div class="inner">
+    <span id="logtext">A bell over the door that you disconnected on purpose.</span>
+    <button class="iconbtn" id="logtoggle">Log</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   GLOVES & GOGGLES — Villain Supply, thin prototype
+   Hook under test: the circular customer economy. You arm unsuccessful
+   villains; their schemes resolve off screen; the report changes their
+   reputation, budget and demand, and sends loot, wreckage or a stolen
+   blueprint back to your counter. The legendary client on your books is
+   somebody you personally armed when they were nobody.
+   ===================================================================== */
+
+/* ---------- tags ---------- */
+const TAGS={
+  disguise:{n:'Disguise',e:'🎭'}, access:{n:'Access',e:'🧗'},
+  escape:{n:'Escape',e:'💨'},     flair:{n:'Flair',e:'🎩'},
+  gadget:{n:'Gadgetry',e:'🔴'},   recon:{n:'Recon',e:'🥽'},
+  firepower:{n:'Firepower',e:'🔫'},crew:{n:'Crew',e:'🤖'},
+  defence:{n:'Defence',e:'🛡️'}
+};
+const TAGKEYS=Object.keys(TAGS);
+
+/* ---------- materials & components ---------- */
+const MATS=[
+  {id:'metal',n:'Scrap Metal',e:'🔩',buy:4},
+  {id:'wire', n:'Wire & Chips',e:'🔌',buy:7},
+  {id:'cloth',n:'Bolt Cloth',  e:'🪡',buy:5},
+  {id:'chem', n:'Reagents',    e:'⚗️', buy:10},
+  {id:'optic',n:'Optics',      e:'🔭',buy:16},
+  {id:'cell', n:'Power Cells', e:'🔋',buy:22},
+  {id:'board',n:'Control Board',e:'🧠',comp:true},
+  {id:'chassis',n:'Chassis',   e:'📦',comp:true},
+  {id:'laser',n:'Laser Module',e:'🔆',comp:true}
+];
+const MAT=id=>MATS.find(m=>m.id===id);
+
+/* components are built at the bench like goods, but stock into materials */
+const COMPS=[
+  {id:'board',  r:{metal:2,wire:2},        time:3.0, bp:'board'},
+  {id:'chassis',r:{metal:3,cloth:1},       time:3.0, bp:'board'},
+  {id:'laser',  r:{board:1,optic:1,cell:1},time:5.0, bp:'laser'}
+];
+
+/* ---------- goods ---------- */
+const GOODS=[
+  {id:'mask',   n:'Domino Mask',        e:'🎭', r:{cloth:1},                price:16, tags:['disguise'],        t:0,time:2.0},
+  {id:'gloves', n:'Dramatic Gloves',    e:'🧤', r:{cloth:1},                price:15, tags:['flair'],           t:0,time:2.0},
+  {id:'rope',   n:'Coil of Rope',       e:'🪢', r:{cloth:1,metal:1},        price:27, tags:['access'],          t:0,time:2.4},
+  {id:'smoke',  n:'Smoke Bomb',         e:'💨', r:{chem:1,metal:1},         price:36, tags:['escape'],          t:0,time:2.6},
+  {id:'cape',   n:'Swirling Cape',      e:'🧥', r:{cloth:2},                price:34, tags:['flair','escape'],  t:0,time:3.0},
+  {id:'button', n:'Suspicious Button',  e:'🔴', r:{wire:1,metal:1},         price:32, tags:['gadget'],          t:0,time:2.6},
+  {id:'goggles',n:'Night Goggles',      e:'🥽', r:{optic:1,wire:1},         price:82, tags:['recon'],           t:1,time:4.0,bp:'optics'},
+  {id:'launcher',n:'Grappling Launcher',e:'🪝', r:{board:1,metal:2,cloth:1},price:160,tags:['access'],          t:1,time:5.0,bp:'grapple'},
+  {id:'boots',  n:'Magnetic Boots',     e:'🧲', r:{board:1,cell:1},         price:175,tags:['access','defence'],t:1,time:5.0,bp:'magnet'},
+  {id:'drone',  n:'Henchdrone',         e:'🤖', r:{board:1,chassis:1,cell:1},price:330,tags:['crew','recon'],   t:2,time:7.0,bp:'drone'},
+  {id:'ray',    n:'Ray Pistol',         e:'🔫', r:{laser:1,chassis:1},      price:360,tags:['firepower'],       t:2,time:7.0,bp:'ray'},
+  {id:'field',  n:'Pocket Force Field', e:'🛡️',r:{laser:1,board:1,cell:1},price:560,tags:['defence'],     t:3,time:9.0,bp:'field'},
+  {id:'cannon', n:'Gravity Cannon',     e:'🌀', r:{laser:2,chassis:1,board:1},price:1250,tags:['firepower','defence'],t:3,time:12,bp:'cannon'},
+  /* event-only oddity */
+  {id:'lglove', n:'Left-Handed Gloves', e:'🧤', r:null,                     price:6,  tags:['flair'],           t:0,time:1, odd:true}
+];
+const GOOD=id=>GOODS.find(g=>g.id===id);
+
+/* ---------- blueprints ---------- */
+const BPS=[
+  {id:'board',  n:'Control Board Schematic', e:'🧠', c:12,  d:'Metal and wire become a thing that thinks a little. Also unlocks the chassis jig.'},
+  {id:'optics', n:'Low-Light Optics',        e:'🥽', c:26,  d:'Night Goggles. Villains who can see in the dark mostly stop falling into things.'},
+  {id:'grapple',n:'Launcher Patent',         e:'🪝', c:48,  d:'A rope, but angry. Turns any wall into a staircase.', req:'board'},
+  {id:'magnet', n:'Electromagnet Sole',      e:'🧲', c:62,  d:'Boots that hold onto a building. Useless alone. Ask anyone who has tried.', req:'board'},
+  {id:'laser',  n:'Coherent Light Module',   e:'🔆', c:80,  d:'Optics plus a cell plus a board. The component every expensive thing needs.', req:'board'},
+  {id:'ray',    n:'Ray Pistol Pattern',      e:'🔫', c:120, d:'Laser module in a chassis with a trigger. Sells itself.', req:'laser'},
+  {id:'drone',  n:'Henchdrone Airframe',     e:'🤖', c:145, d:'A henchman with no opinions and no cousin who needs a job.', req:'board'},
+  {id:'field',  n:'Pocket Field Emitter',    e:'🛡️',c:230,d:'Stops most things. Not arguments.', req:'laser', steal:true},
+  {id:'cannon', n:'Gravity Cannon (partial)',e:'🌀', c:420, d:'Three quarters of a design somebody stole from somebody else. The last quarter is a rumour.', req:'field', steal:true}
+];
+const BP=id=>BPS.find(b=>b.id===id);
+
+/* ---------- loadout synergies (discoverable) ---------- */
+const SYNS=[
+  {id:'storey', n:'Second-Storey Special', e:'🧗', b:0.15, need:[['rope','launcher'],['boots']],
+   d:'Something to climb with and something to stand on. Buildings stop having a ground floor.'},
+  {id:'vanish', n:'Now You Don’t',    e:'🎩', b:0.10, save:true, need:[['smoke'],['cape']],
+   d:'Smoke and a cape. A failure becomes an exit. Disasters downgrade to a bad evening.'},
+  {id:'dark',   n:'Full Dark',             e:'🌑', b:0.12, quiet:true, need:[['goggles'],['mask','cape']],
+   d:'Seeing in the dark while being hard to see in. Nemeses arrive late, and so does the heat.'},
+  {id:'overkill',n:'The Overkill Package', e:'💥', b:0.17, loud:true, need:[['ray','cannon'],['drone']],
+   d:'A gun and something else to hold a second gun. Loud, expensive, extremely effective.'},
+  {id:'gent',   n:'The Gentleman’s Kit',e:'🥂', b:0.09, style:true, need:[['gloves'],['cape'],['mask']],
+   d:'Gloves, cape, mask. Nobody describes the face. Everybody describes the outfit. Loot is worth more.'}
+];
+
+/* ---------- schemes ---------- */
+const SCHEMES=[
+  {id:'shop',  n:'a corner-shop job',       e:'🏪', need:['disguise'],                        pay:90,   pw:1,  min:0},
+  {id:'burgle',n:'a first-floor burglary',  e:'🏠', need:['access','disguise'],               pay:260,  pw:2,  min:0},
+  {id:'gala',  n:'a charity gala',          e:'🥂', need:['flair','disguise'],                pay:420,  pw:3,  min:1},
+  {id:'jewel', n:'a jewellery robbery',     e:'💎', need:['escape','disguise'],               pay:620,  pw:4,  min:1},
+  {id:'museum',n:'a museum after hours',    e:'🏛️',need:['recon','access','escape'],    pay:1100, pw:7,  min:2},
+  {id:'bank',  n:'a bank vault',            e:'🏦', need:['access','firepower','escape'],     pay:1700, pw:9,  min:2},
+  {id:'truck', n:'an armoured car',         e:'🚚', need:['firepower','crew'],                pay:2100, pw:11, min:3},
+  {id:'lab',   n:'a research lab',          e:'🧬', need:['recon','gadget','defence'],        pay:3000, pw:13, min:3},
+  {id:'mint',  n:'the city mint',           e:'🪙', need:['firepower','defence','crew','escape'],pay:6400,pw:20,min:4}
+];
+
+/* ---------- client ranks ---------- */
+const RANKS=[
+  {n:'Nobody',        rep:0,  bud:60},
+  {n:'Local Nuisance',rep:6,  bud:200},
+  {n:'Known Operator',rep:14, bud:620},
+  {n:'Notorious',     rep:26, bud:1900},
+  {n:'Legendary',     rep:46, bud:5800}
+];
+
+/* ---------- named clients ---------- */
+const NAMED=[
+  {id:'gary',n:'Gary',e:'🥸',spec:'petty theft',minRep:0,fav:['disguise','escape'],
+   line:'Has been about to break through for eleven years.',
+   nem:'Deborah, who runs the neighbourhood watch',
+   titles:['the Ungreat','the Adequate','the Considerable','the Magnificent','the Gentleman']},
+  {id:'moth',n:'Mister Moth',e:'🦋',spec:'night burglary',minRep:3,fav:['recon','access'],
+   line:'Works only at night. Owns nothing that is not grey.',
+   nem:'a floodlight salesman with a grudge', titles:['']},
+  {id:'duch',n:'The Duchess of Static',e:'⚡',spec:'electrical heists',minRep:8,fav:['gadget','firepower'],
+   line:'Will not steal anything that is not plugged in.',
+   nem:'Ron, a substation engineer', titles:['']},
+  {id:'pram',n:'Doctor Perambulator',e:'👶',spec:'smuggling',minRep:14,fav:['disguise','flair'],
+   line:'Pushes a pram. There has never been a baby in it.',
+   nem:'a customs officer with an excellent memory', titles:['']},
+  {id:'brick',n:'Brick Wallace',e:'🧱',spec:'smash and grab',minRep:20,fav:['firepower','crew'],
+   line:'Believes subtlety is a kind of cowardice.',
+   nem:'the load-bearing wall, historically', titles:['']},
+  {id:'nan',n:'Nan Terror',e:'👵',spec:'armed robbery',minRep:30,fav:['escape','defence'],
+   line:'Retired. Allegedly.', nem:'her own hip', titles:['']},
+  {id:'clive',n:'Clive',e:'🎩',spec:'freelance henchwork',minRep:38,fav:['crew','defence'],
+   line:'Was somebody else’s henchman for nine years. Has opinions about management.',
+   nem:'his former employer', titles:['']},
+  {id:'verm',n:'The Vermillion Hand',e:'🖐️',spec:'grand larceny',minRep:52,fav:['flair','firepower'],
+   line:'Sends a card first. Always. It is a whole thing.',
+   nem:'a detective who keeps every card', titles:['']}
+];
+
+/* ---------- generic archetypes (collection) ---------- */
+const ARCH=[
+  {id:'amateur',n:'Masked Amateur',   e:'🎭',fav:['disguise'],          d:'Bought the mask before the plan.'},
+  {id:'cat',    n:'Cat Burglar',      e:'🐈',fav:['access','recon'],    d:'Quiet, insured, oddly punctual.'},
+  {id:'chem',   n:'Mad Chemist',      e:'⚗️', fav:['escape','gadget'],  d:'Smells faintly of almonds and apology.'},
+  {id:'wheels', n:'Getaway Driver',   e:'🚗',fav:['escape','crew'],     d:'Does not go inside. Ever. Bills anyway.'},
+  {id:'doc',    n:'Disgraced Scientist',e:'🧪',fav:['gadget','defence'],d:'Peer review went badly in several senses.'},
+  {id:'union',  n:'Union Henchman',   e:'👷',fav:['crew','defence'],    d:'Will not lift anything over 25kg without a second.'},
+  {id:'art',    n:'Art Thief',        e:'🖼️',fav:['flair','recon'],d:'Steals only what they would hang at home.'},
+  {id:'doom',   n:'Doomsday Hobbyist',e:'☄️', fav:['firepower','gadget'],d:'It is a weekend thing. So far.'},
+  {id:'plant',  n:'Undercover Officer',e:'👮',fav:['disguise'],         d:'Shoes too clean. Asks for a receipt. Nemesis: "crime, generally".',secret:true}
+];
+const FIRST=['Nigel','Brenda','Ivo','Sasha','Colm','Mirela','Dez','Hattie','Rook','Val','Pim','Otto','Lune','Marge'];
+const LAST=['Crane','Pell','Vance','Mott','Quill','Grimsby','Ash','Vole','Beck','Trask','Doone','Halloran'];
+
+/* ---------- premises ---------- */
+const BAYS=[
+  {id:'fab',  n:'Fabrication Bay',e:'🏭',d:'+2 build slots, and everything builds 25% faster.'},
+  {id:'chem', n:'Chem Bench',     e:'⚗️', d:'Reagents cost 60% less, and one condenses out of the air every 10s.'},
+  {id:'optics',n:'Optics Room',   e:'🔭',d:'Optics and cells cost 40% less. Recon goods sell 25% higher.'},
+  {id:'disp', n:'Dispatch',       e:'🚚',d:'+10 shelf space and the walk-in trade moves twice as fast.'},
+  {id:'front',n:'Front Office',   e:'🗄️',d:'Heat falls twice as fast and laundering costs half.'}
+];
+const BAYD=id=>BAYS.find(b=>b.id===id);
+
+/* ---------- upgrades ---------- */
+const UPS=[
+  {id:'shelf', n:'Another Shelf Unit',  d:'+4 shelf space. Chipboard, but it holds.',           c:55,  scale:1.85,max:6, buy(){S.shelfCap+=4}},
+  {id:'alley', n:'Standing Order, Back Alley',d:'Junk crates turn up faster and fuller.',       c:85,  scale:2.3, max:4, buy(){S.up.alley++}},
+  {id:'bench', n:'Second Workbench',    d:'+1 build slot. You only have so many soldering irons.',c:150,scale:2.5,max:3, buy(){S.benchSlots++}},
+  {id:'sign',  n:'A Sign With No Words On It',d:'+40% foot traffic. Villains find you. So does everyone. (heat trickles)',c:230,scale:3,max:2,buy(){S.up.sign++}},
+  {id:'ozzy',  n:'Hire Ozzy',           d:'Strips junk crates unasked and has never once wondered what any of it is for.',c:300,rep:5,max:1,staff:'ozzy'},
+  {id:'priya', n:'Hire Priya',          d:'Shop hand. Runs the walk-in trade so your attention goes to the people who matter.',c:420,rep:9,max:1,staff:'priya'},
+  {id:'fab',   n:'Hire a Fabricator',   d:'Builds whatever is queued. Slowly. Correctly. Repeatedly.',c:620,rep:14,scale:2.1,max:3,staff:'fab'},
+  {id:'sheila',n:'Hire Sheila',         d:'Doorman. Marks the customers whose shoes are too clean, and bleeds heat off every sale.',c:900,rep:20,max:1,staff:'sheila'},
+  {id:'tick',  n:'Hire Tick',           d:'Reverse engineer. Turns damaged returns into schematics without being asked.',c:1150,rep:26,max:1,staff:'tick'},
+  {id:'exp2',  n:'EXPAND: Specialty Store',d:'Knock through into the shuttered unit next door. One bay, and you choose what goes in it.',c:1100,rep:18,max:1,expand:2},
+  {id:'exp3',  n:'EXPAND: The Warehouse', d:'Leave the high street entirely. Two more bays and a loading dock.',c:6000,rep:44,max:1,expand:3}
+];
+const UP=id=>UPS.find(u=>u.id===id);
+
+/* ---------- report copy ---------- */
+const REPORT={
+  triumph:[
+    '{N} did {s} and got clean away. The police have no description. Somebody has a great deal of money.',
+    '{N} did {s}. The write-up used the word "professional". {N} has had it laminated.',
+    '{N} did {s} so smoothly that two witnesses described it as "a magic trick, but rude".'
+  ],
+  success:[
+    '{N} did {s}. Nothing went wrong that could not be walked away from briskly.',
+    '{N} did {s} and was home in time for the nine o’clock news, which mentioned it.',
+    '{N} did {s}. One minor hiccup involving a fire door. Otherwise textbook.'
+  ],
+  scrape:[
+    '{N} attempted {s}. Got out. Got nothing. Got a bruise shaped like a bollard.',
+    '{N} attempted {s}, then attempted a hedge, and the hedge won on points.',
+    '{N} attempted {s}. Escaped with dignity intact and nothing else intact.'
+  ],
+  fiasco:[
+    '{N} attempted {s} and was recognised almost immediately by somebody who knows their mother.',
+    '{N} attempted {s}. An alarm went off that nobody knew existed, including the building.',
+    '{N} attempted {s} and set off the sprinklers. It was not a fire-based plan.'
+  ],
+  disaster:[
+    '{N} attempted {s}. {nem} was already there. {nem} had brought a flask.',
+    '{N} attempted {s} and is now assisting several people with several enquiries.',
+    '{N} attempted {s}. The word used on the radio was "apprehended", which is never a good word.'
+  ]
+};
+const CREDIT=[
+  'The {i} did most of the work.','Specifically the {i}.','They mention the {i} twice.',
+  'They want another {i}. Two, if you have two.','Apparently the {i} "changed everything".'
+];
+const BLAME=[
+  'They blame the {i}. The {i} is not here to defend itself.',
+  'The {i} came back in pieces.','They have questions about the {i}. You have answers about warranties.',
+  'The {i} did not survive contact with the plan.'
+];
+
+/* ---------- state ---------- */
+const SAVE_KEY='glovesandgoggles.v1';
+let S=null;
+function freshState(){
+  const mat={}; for(const m of MATS) mat[m.id]=0;
+  const dem={}; for(const k of TAGKEYS) dem[k]=1;
+  return {
+    v:1, cash:40, rep:0, heat:0, sch:0, pat:0, day:1, dayT:0, t:0,
+    mat, junk:3, junkT:0,
+    stock:{}, shelfCap:8, bench:[], benchSlots:1, dmg:[],
+    clients:[], counter:null, nextCust:15, uid:1,
+    dem, ups:{}, up:{alley:0,sign:0}, staff:{}, bp:{}, syn:{}, arch:{}, made:{},
+    stage:1, bays:[], evT:70, evSeen:{}, stock0:0,
+    raid:0, closed:0, tab:'bench', muted:false, tips:{},
+    sold:0, best:0, reports:0, lastReal:Date.now()
+  };
+}
+
+/* ---------- utils ---------- */
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const $=id=>document.getElementById(id);
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function money(n){ n=Math.round(n); return '$'+(n>=10000? (n/1000).toFixed(1)+'k' : n.toLocaleString('en-US')); }
+function num(n){ n=Math.round(n); return n>=10000? (n/1000).toFixed(1)+'k' : String(n); }
+
+/* ---------- audio ---------- */
+let AC=null;
+function beep(freq,dur,type,vol){
+  if(S&&S.muted) return;
+  try{
+    if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended') AC.resume();
+    const o=AC.createOscillator(), gn=AC.createGain();
+    o.type=type||'triangle'; o.frequency.value=freq;
+    gn.gain.setValueAtTime(0,AC.currentTime);
+    gn.gain.linearRampToValueAtTime(vol||0.05,AC.currentTime+0.01);
+    gn.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+(dur||0.12));
+    o.connect(gn); gn.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime+(dur||0.12)+0.02);
+  }catch(e){}
+}
+const SFX={
+  tap(){ beep(400,.05,'square',.025); },
+  clunk(){ beep(150,.09,'square',.05); setTimeout(()=>beep(96,.12,'sine',.045),50); },
+  cash(){ beep(760,.08,'triangle',.05); setTimeout(()=>beep(1140,.11,'triangle',.04),55); },
+  weld(){ beep(320,.05,'sawtooth',.03); setTimeout(()=>beep(520,.07,'sawtooth',.025),60); },
+  done(){ beep(620,.08,'sine',.045); setTimeout(()=>beep(930,.14,'sine',.04),75); },
+  bell(){ beep(880,.12,'sine',.04); setTimeout(()=>beep(1180,.16,'sine',.03),80); },
+  bad(){ beep(180,.22,'sawtooth',.05); },
+  alarm(){ beep(520,.16,'square',.05); setTimeout(()=>beep(420,.2,'square',.05),160); },
+  reveal(){ beep(620,.09,'sine',.05); setTimeout(()=>beep(930,.1,'sine',.05),80);
+            setTimeout(()=>beep(1240,.22,'sine',.05),170); }
+};
+
+/* ---------- log / toast / popups ---------- */
+const LOG=[];
+function log(html){
+  LOG.unshift(html); if(LOG.length>60) LOG.pop();
+  const lt=$('logtext'); if(lt) lt.innerHTML=html;
+  const lf=$('logfull'); if(lf&&lf.classList.contains('open')) lf.innerHTML=LOG.map(x=>'<div>'+x+'</div>').join('');
+}
+function toast(title,body,kind){
+  const d=document.createElement('div');
+  d.className='toast'+(kind?' '+kind:'');
+  d.innerHTML='<b>'+title+'</b>'+(body||'');
+  $('toast').appendChild(d);
+  setTimeout(()=>{ d.style.transition='opacity .4s'; d.style.opacity='0';
+    setTimeout(()=>d.remove(),420); },5200);
+}
+function flash(id){ const e=$(id); if(!e) return; e.classList.remove('pulse'); void e.offsetWidth; e.classList.add('pulse'); }
+function popAt(el,txt,cls){
+  if(!el||!el.getBoundingClientRect) return;
+  const r=el.getBoundingClientRect();
+  const d=document.createElement('div');
+  d.className='pop'+(cls?' '+cls:''); d.textContent=txt;
+  d.style.left=(r.left+r.width/2-14)+'px'; d.style.top=(r.top-4)+'px';
+  document.body.appendChild(d); setTimeout(()=>d.remove(),1000);
+}
+
+/* ---------- economy helpers ---------- */
+function hasBay(id){ return S.bays.indexOf(id)>=0; }
+function addCash(n,el){ S.cash+=n; flash('s-cash'); if(el) popAt(el,(n>=0?'+':'−')+money(Math.abs(n)).replace('$',''),'cash'); }
+function addRep(n){ S.rep=Math.max(0,S.rep+n); flash('s-rep'); }
+function addSch(n,why){ S.sch+=n; flash('s-sch'); if(why) log(why+' <b>+'+n+' schematics</b>'); }
+function addPat(n){ S.pat+=n; }
+function addHeat(n){
+  if(n>0 && S.staff.sheila) n*=0.6;
+  if(n>0 && hasBay('front')) n*=0.85;
+  S.heat=clamp(S.heat+n,0,100); flash('s-heat');
+}
+function heatTier(){ return S.heat<25?0 : S.heat<50?1 : S.heat<75?2 : 3; }
+const HEATN=['Quiet','Noticed','Watched','Exposed'];
+function matCost(id){
+  const m=MAT(id); if(!m||!m.buy) return 0;
+  let c=m.buy;
+  if(id==='chem'&&hasBay('chem')) c*=0.4;
+  if((id==='optic'||id==='cell')&&hasBay('optics')) c*=0.6;
+  return Math.ceil(c);
+}
+function demOf(g){ let d=0; for(const t of g.tags) d=Math.max(d,S.dem[t]||1); return d; }
+function priceOf(g){
+  let p=g.price*demOf(g)*(1+S.rep*0.0016);
+  if(hasBay('optics')&&g.tags.indexOf('recon')>=0) p*=1.25;
+  return Math.max(1,Math.round(p));
+}
+function shelfCount(){ let n=0; for(const k in S.stock) n+=S.stock[k]; return n; }
+function shelfCap(){ return S.shelfCap + (hasBay('disp')?10:0); }
+function traffic(){ return (1 + S.rep*0.008 + S.up.sign*0.4) * (heatTier()>=2?(heatTier()===3?0.5:0.75):1) * (S.closed>0?0:1); }
+function buildSpeed(){ return (1 + (S.staff.fab||0)*0.15) * (hasBay('fab')?1.25:1); }
+function benchSlots(){ return S.benchSlots + (hasBay('fab')?2:0); }
+function canAfford(r){ for(const k in r) if((S.mat[k]||0)<r[k]) return false; return true; }
+function recipeStr(r){ return Object.keys(r).map(k=>MAT(k).e+r[k]).join(' '); }
+
+/* ---------- clients ---------- */
+function rankOf(c){ let r=0; for(let i=0;i<RANKS.length;i++) if(c.rep>=RANKS[i].rep) r=i; return r; }
+function budgetOf(c){ return Math.round(RANKS[rankOf(c)].bud * clamp(c.budM,0.75,3) * clamp(1+S.rep*0.012,1,2.0)); }
+function cliName(c){
+  if(!c.named) return c.n;
+  const nd=NAMED.find(x=>x.id===c.named);
+  const ti=nd.titles.length>1 ? nd.titles[Math.min(nd.titles.length-1,rankOf(c))] : nd.titles[0];
+  return ti? nd.n+' '+ti : nd.n;
+}
+function newNamed(id){
+  const nd=NAMED.find(x=>x.id===id);
+  return {uid:S.uid++, named:id, n:nd.n, e:nd.e, spec:nd.spec, line:nd.line, nem:nd.nem,
+          fav:nd.fav.slice(), arch:null, rep:0, budM:1, state:'browsing', t:0, runs:0, wins:0,
+          press:0, hist:[], loyal:0};
+}
+function newGeneric(){
+  const a=pick(ARCH.filter(x=>!x.secret));
+  return {uid:S.uid++, named:null, n:pick(FIRST)+' '+pick(LAST), e:a.e, spec:a.n.toLowerCase(),
+          line:a.d, nem:'somebody with a clipboard', fav:a.fav.slice(), arch:a.id,
+          rep:ri(0,clamp(Math.floor(S.rep/9),0,17)), budM:rnd(0.85,1.35), state:'browsing', t:0, runs:0, wins:0,
+          press:0, hist:[], loyal:0};
+}
+function newPlant(){
+  const a=ARCH.find(x=>x.id==='plant');
+  return {uid:S.uid++, named:null, plant:true, n:pick(FIRST)+' '+pick(LAST), e:pick(['🕵️','🧑','👔']),
+          spec:pick(['"acquisitions"','"redistribution"','"night work"']),
+          line:pick(['Shoes are extremely clean. Asks whether you do receipts.',
+                     'Says "as you know, I am a criminal" unprompted.',
+                     'Nemesis listed as "crime, generally". Keeps glancing at a van.']),
+          nem:'crime, generally', fav:['disguise'], arch:'plant', rep:ri(4,20), budM:1.4,
+          state:'browsing', t:0, runs:0, wins:0, press:0, hist:[], loyal:0};
+}
+function ensureClients(){
+  for(const nd of NAMED){
+    if(S.rep>=nd.minRep && !S.clients.some(c=>c.named===nd.id)){
+      const c=newNamed(nd.id); S.clients.push(c);
+      if(nd.id!=='gary') log('<b>'+cliName(c)+'</b> has started coming in. '+esc(nd.line));
+      if(!S.arch[nd.id]) S.arch[nd.id]=1;
+    }
+  }
+  const gen=S.clients.filter(c=>!c.named&&!c.plant);
+  const want=clamp(2+Math.floor(S.rep/14),2,6);
+  if(gen.length<want) S.clients.push(newGeneric());
+  if(S.clients.length>11){
+    const i=S.clients.findIndex(c=>!c.named&&c.state==='browsing'&&c.runs>0);
+    if(i>=0) S.clients.splice(i,1);
+  }
+}
+function schemeFor(c){
+  const r=rankOf(c);
+  if(r===0 && Math.random()<0.7) return SCHEMES[0];
+  const pool=SCHEMES.filter(s=>s.min<=r && s.min>=r-2);
+  const favd=pool.filter(s=>s.need.some(t=>c.fav.indexOf(t)>=0));
+  return pick(favd.length&&Math.random()<0.7?favd:pool);
+}
+
+/* ---------- loadout maths ---------- */
+function selItems(sel){ const out=[]; for(const k in sel){ for(let i=0;i<sel[k];i++) out.push(GOOD(k)); } return out; }
+function clientPay(g,scheme){
+  const f=g.tags.filter(t=>scheme.need.indexOf(t)>=0).length / Math.max(1,g.tags.length);
+  return Math.round(priceOf(g)*(1+0.3*f));
+}
+function synActive(items){
+  const have={}; for(const g of items) have[g.id]=(have[g.id]||0)+1;
+  return SYNS.filter(s=>s.need.every(grp=>grp.some(id=>have[id])));
+}
+function loadout(c,scheme,sel){
+  const items=selItems(sel);
+  const tags={}; let pw=0, cost=0;
+  for(const g of items){
+    pw+=Math.pow(1.9,g.t)*(g.odd?0.2:1); cost+=clientPay(g,scheme);
+    for(const t of g.tags) tags[t]=(tags[t]||0)+1;
+  }
+  const covered=scheme.need.filter(t=>tags[t]).length;
+  const fit=scheme.need.length? covered/scheme.need.length : 1;
+  const pwr=clamp(pw/scheme.pw,0,1.3);
+  const syns=synActive(items);
+  let bonus=0; for(const s of syns) bonus+=s.b;
+  const press=clamp(c.press,0,0.4)*0.30;
+  let chance=0.06+0.45*fit+0.20*pwr+0.028*rankOf(c)+0.012*Math.min(10,c.runs)+bonus-press;
+  if(!items.length) chance=0.05;
+  chance=clamp(chance,0.02,0.96);
+  return {items,tags,fit,pwr,syns,bonus,cost,chance,covered,press};
+}
+
+/* ---------- selling ---------- */
+function closeSale(backed){
+  const k=S.counter; if(!k||k.kind!=='client') return;
+  const c=k.c, sc=k.scheme;
+  for(const id in k.sel){ const have=S.stock[id]||0; if(k.sel[id]>have){ if(have<=0) delete k.sel[id]; else k.sel[id]=have; } }
+  const L=loadout(c,sc,k.sel);
+  if(!L.items.length){ SFX.bad(); return; }
+  for(const id in k.sel){ S.stock[id]=(S.stock[id]||0)-k.sel[id]; if(S.stock[id]<=0) delete S.stock[id]; }
+  const paid = backed? Math.round(L.cost*0.5) : L.cost;
+  addCash(paid,$('s-cash')); S.sold+=L.items.length;
+  if(paid>S.best) S.best=paid;
+  addRep(clamp(paid/120,0.15,4));
+  addHeat(clamp(paid/95,0.4,9) + (L.syns.some(s=>s.loud)?4:0) - (L.syns.some(s=>s.quiet)?1.5:0));
+  SFX.cash();
+
+  if(k.plant){ bustedByPlant(c,paid); return; }
+
+  /* first-time synergy discovery */
+  for(const s of L.syns){
+    if(!S.syn[s.id]){
+      S.syn[s.id]=1; addSch(8); addPat(6); SFX.reveal();
+      toast(s.e+' '+s.n, esc(s.d)+' <span style="color:var(--accent-2)">Discovered — filed under Synergies.</span>','good');
+      log('<b>'+s.n+'</b> — that combination does something neither item does alone.');
+    }
+  }
+  for(const g of L.items) if(!S.made[g.id+'_sold']){ S.made[g.id+'_sold']=1; addSch(1); }
+
+  c.state='away'; c.t=rnd(22,38); c.runs++; c.loyal++;
+  c.job={scheme:sc.id, items:L.items.map(g=>g.id), syn:L.syns.map(s=>s.id),
+         chance:L.chance, backed:!!backed, pay:sc.pay};
+  log('Sold <b>'+L.items.length+'</b> item'+(L.items.length>1?'s':'')+' to <b>'+esc(cliName(c))+'</b> for <b>'+money(paid)+'</b>'+
+      (backed?' <span class="pos">(backed — quarter of the take if they land it)</span>':'')+'. Off they go.');
+  if(!S.tips.away){ S.tips.away=1; setTimeout(()=>toast('It resolves off screen',
+    'You do not watch the job. A report comes back in under a minute, and the report is the game: it moves their reputation, their budget, and what the whole street wants to buy.'),600); }
+  closeCounter();
+}
+function turnAway(){
+  const k=S.counter; if(!k) return;
+  const c=k.c;
+  if(k.plant){
+    log('You tell <b>'+esc(c.n)+'</b> that you sell fancy dress. They write that down.');
+    if(!S.arch.plant){ S.arch.plant=1; addSch(4); addPat(3);
+      toast('Filed: Undercover Officer','Too-clean shoes, a request for a receipt, a nemesis listed as "crime, generally". Now you know the tells. They are in your Files.','good'); }
+    S.clients=S.clients.filter(x=>x!==c);
+    addHeat(1); SFX.tap();
+  } else {
+    c.state='browsing'; c.t=rnd(14,26); c.loyal=Math.max(0,c.loyal-1);
+    log('You tell <b>'+esc(cliName(c))+'</b> you have nothing for them. No sale, no money, <span class="pos">no heat</span>.');
+    SFX.tap();
+  }
+  closeCounter();
+}
+function bustedByPlant(c,paid){
+  addHeat(30); SFX.alarm();
+  toast('That was not a villain','<b>'+esc(c.n)+'</b> paid you '+money(paid)+' in marked notes and left with a receipt you did not give them. '+
+    'Heat up hard. Nothing is lost — but the shop is on somebody’s list now.','bad');
+  log('<span class="neg"><b>'+esc(c.n)+'</b> was police. The shoes were too clean. <b>Heat +30</b>.</span>');
+  S.clients=S.clients.filter(x=>x!==c);
+  if(!S.arch.plant){ S.arch.plant=1; addSch(4); }
+  closeCounter();
+}
+
+/* ---------- the hook: outcome reports ---------- */
+function resolveScheme(c){
+  const j=c.job||{scheme:'shop',items:[],syn:[],chance:0.2,pay:60,backed:false};
+  const sc=SCHEMES.find(s=>s.id===j.scheme)||SCHEMES[0];
+  const syns=SYNS.filter(s=>j.syn.indexOf(s.id)>=0);
+  const ch=j.chance;
+  const r=Math.random();
+  let out;
+  if(r<ch*0.34) out='triumph';
+  else if(r<ch) out='success';
+  else if(r<ch+(1-ch)*0.50) out='scrape';
+  else if(r<ch+(1-ch)*0.86) out='fiasco';
+  else out='disaster';
+  if(out==='disaster' && sc.min===0 && c.press<0.2) out='fiasco';
+  if(syns.some(s=>s.save)){
+    if(out==='disaster') out='fiasco'; else if(out==='fiasco') out='scrape';
+  }
+  const styleM=syns.some(s=>s.style)?1.45:1;
+  const quiet=syns.some(s=>s.quiet);
+  const usedTags={}; for(const id of j.items){ const g=GOOD(id); if(g) for(const t of g.tags) usedTags[t]=1; }
+  const star=j.items.length? GOOD(j.items.slice().sort((a,b)=>GOOD(b).t-GOOD(a).t)[0]) : null;
+
+  const before=rankOf(c);
+  let line=pick(REPORT[out]).replace(/\{N\}/g,esc(cliName(c))).replace('{s}',sc.n).replace(/\{nem\}/g,esc(c.nem));
+  let extra='';
+  if(star){
+    extra=' '+(out==='triumph'||out==='success'? pick(CREDIT):pick(BLAME)).replace(/\{i\}/g,esc(star.n));
+  }
+  S.reports++;
+  let kind='', dCash=0;
+
+  if(out==='triumph'){
+    c.rep+=8+sc.min*2.5; c.budM*=1.55; c.wins++; c.press=Math.max(0,c.press-0.10); addRep(1.5+sc.min*0.9);
+    for(const t in usedTags) S.dem[t]=clamp((S.dem[t]||1)+0.26,0.5,3.2);
+    dCash=Math.round(sc.pay*0.12*styleM);
+    queueBring(c,{kind:'loot', cash:dCash, mats:lootMats(sc,styleM), bp:maybeStealBP(sc), heat:6});
+    addSch(5+sc.min); addPat(1); kind='good'; SFX.reveal();
+  } else if(out==='success'){
+    c.rep+=4+sc.min*1.5; c.budM*=1.26; c.wins++; c.press=Math.max(0,c.press-0.06); addRep(0.8+sc.min*0.45);
+    for(const t in usedTags) S.dem[t]=clamp((S.dem[t]||1)+0.16,0.5,3.2);
+    dCash=Math.round(sc.pay*0.06*styleM);
+    if(dCash>0) queueBring(c,{kind:'loot', cash:dCash, mats:lootMats(sc,styleM*0.6), heat:3});
+    addSch(3); kind='good'; SFX.done();
+  } else if(out==='scrape'){
+    c.rep+=1; c.budM*=1.04;
+    for(const t in usedTags) S.dem[t]=clamp((S.dem[t]||1)+0.05,0.5,3.2);
+    if(j.items.length) queueBring(c,{kind:'return', gid:pick(j.items), cond:rnd(0.45,0.7)});
+    addSch(1); kind=''; SFX.tap();
+  } else if(out==='fiasco'){
+    c.rep=Math.max(0,c.rep-1); c.budM*=0.9; c.press=Math.min(0.45,c.press+0.10); addHeat(quiet?1:3);
+    if(j.items.length) queueBring(c,{kind:'return', gid:pick(j.items), cond:rnd(0.2,0.45)});
+    addSch(2); kind='bad'; SFX.bad();
+  } else {
+    c.rep=Math.max(0,c.rep-2); c.budM*=0.8; c.press=Math.min(0.45,c.press+0.15); addHeat(quiet?4:9);
+    c.state='dormant'; c.t=rnd(45,75);
+    if(j.items.length) queueBring(c,{kind:'return', gid:pick(j.items), cond:rnd(0.08,0.3)});
+    addSch(3,'You take the wreckage apart to see what went wrong.'); kind='bad'; SFX.alarm();
+    if(c.press>0.5 && !S.evSeen.detect) queueEvent('detect',c);
+  }
+  if(j.backed && (out==='triumph'||out==='success')){
+    const cut=Math.round(sc.pay*0.25);
+    addCash(cut,$('s-cash'));
+    extra+=' Your quarter of the take: <b>'+money(cut)+'</b>.';
+    addHeat(2);
+  } else if(j.backed){
+    extra+=' You backed that one. Your half-price is all you are getting.';
+  }
+
+  if(c.state!=='dormant'){ c.state='browsing'; c.t=rnd(5,13); }
+  const after=rankOf(c);
+  c.hist.unshift({o:out, s:sc.id, txt:line+extra, day:S.day});
+  if(c.hist.length>9) c.hist.pop();
+
+  log((kind==='bad'?'<span class="neg">':kind==='good'?'<span class="pos">':'<span>')+
+      sc.e+' '+line+'</span>'+extra);
+
+  if(after>before) rankUp(c,after,sc);
+  else if(out==='triumph'||(out==='success'&&sc.min>=2))
+    toast(sc.e+' Report: '+esc(cliName(c)), line+extra, kind==='bad'?'bad':'good');
+}
+function lootMats(sc,m){
+  const out={}; const n=clamp(Math.round((1+sc.min*1.4)*m),1,8);
+  const pool=['metal','wire','cloth','chem'].concat(sc.min>=1?['optic']:[]).concat(sc.min>=2?['cell','optic']:[]);
+  for(let i=0;i<n;i++){ const k=pick(pool); out[k]=(out[k]||0)+ri(1,2); }
+  return out;
+}
+function nextStealBP(){
+  const av=BPS.filter(b=>!S.bp[b.id]&&(!b.req||S.bp[b.req]));
+  return av.length? av[0].id : null;
+}
+function maybeStealBP(sc){
+  if(sc.min<2) return null;
+  const locked=BPS.filter(b=>!S.bp[b.id]&&b.steal&&(!b.req||S.bp[b.req]));
+  if(!locked.length) return null;
+  return Math.random()<0.38? pick(locked).id : null;
+}
+function rankUp(c,r,sc){
+  const nm=cliName(c);
+  addPat(r>=3?(r>=4?14:6):2);
+  if(r>=2) c.press=Math.min(0.45,c.press+0.08);
+  SFX.reveal();
+  if(c.named==='gary' && r>=2 && !S.evSeen.garybreak){
+    S.evSeen.garybreak=1;
+    queueBring(c,{kind:'loot', cash:900+Math.round(S.rep*14), mats:{optic:3,cell:2,metal:6,wire:4}, bp:nextStealBP(), heat:9, big:true});
+    toast('\u2B50 '+esc(nm), 'Gary is a <b>'+RANKS[r].n+'</b>. Eleven years of being about to break through, and he broke through. '+
+      'His budget is now '+money(budgetOf(c))+'. He is sending a crate over, and a design he did not pay for. '+
+      '<span style="color:var(--accent-2)">You armed this man when he had sixty dollars and a plan about a corner shop.</span>','big');
+    log('<b>'+esc(nm)+'</b> is a <b>'+RANKS[r].n+'</b>. His whole file is on your counter and you caused every line of it.');
+  } else {
+    toast('⬆ '+esc(nm)+' — '+RANKS[r].n,
+      'Their reputation moved because of what you sold them. Budget now <b>'+money(budgetOf(c))+'</b>'+
+      (r>=3?', and their nemesis is taking an interest.':'.'),'good');
+    log('<b>'+esc(nm)+'</b> is now <b>'+RANKS[r].n+'</b>. Budget '+money(budgetOf(c))+'.');
+  }
+}
+function queueBring(c,b){ c.bring=c.bring||[]; c.bring.push(b); }
+
+/* ---------- counter arrivals ---------- */
+function custDelay(){ return clamp(10/traffic(), 3.0, 14); }
+function closeCounter(){ S.counter=null; S.nextCust=custDelay(); }
+function spawnVisitor(){
+  if(S.counter||S.closed>0) return;
+  if(S.evQ&&S.evQ.length){ const e=S.evQ.shift(); openEvent(e.id,e.c); return; }
+  ensureClients();
+  /* something coming back to your counter always takes priority: that is the loop closing */
+  const bringers=S.clients.filter(c=>c.bring&&c.bring.length&&c.state!=='away');
+  if(bringers.length){
+    const c=pick(bringers); const b=c.bring.shift();
+    if(b.kind==='loot') openLoot(c,b); else openReturn(c,b);
+    return;
+  }
+  /* undercover officer, more likely the hotter you are */
+  const pchance=[0,0.07,0.16,0.26][heatTier()];
+  if(Math.random()<pchance && shelfCount()>0){
+    const p=newPlant(); S.clients.push(p); openClient(p,true); return;
+  }
+  const ready=S.clients.filter(c=>c.state==='browsing'&&c.t<=0);
+  if(!ready.length){ S.nextCust=1.5; return; }
+  const named=ready.filter(c=>c.named);
+  const c=pick(named.length&&Math.random()<0.62?named:ready);
+  openClient(c,false);
+}
+function openClient(c,plant){
+  const sc=schemeFor(c);
+  S.counter={kind:'client', c, scheme:sc, sel:{}, plant:!!plant, wait:42, waitMax:42};
+  c.state='atcounter';
+  if(c.arch&&!S.arch[c.arch]&&!plant){ S.arch[c.arch]=1; addSch(2); }
+  SFX.bell();
+  log('<b>'+esc(cliName(c))+'</b> is at the counter. '+sc.e+' Planning '+sc.n+'.');
+}
+function openReturn(c,b){
+  const g=GOOD(b.gid)||GOODS[0];
+  const price=Math.max(1,Math.round(priceOf(g)*0.22*b.cond));
+  S.counter={kind:'return', c, g, cond:b.cond, price, wait:38, waitMax:38};
+  SFX.clunk();
+  log('<b>'+esc(cliName(c))+'</b> is at the counter holding what is left of the '+esc(g.n)+'.');
+}
+function openLoot(c,b){
+  S.counter={kind:'loot', c, b, wait:40, waitMax:40};
+  SFX.bell();
+  log('A crate arrives from <b>'+esc(cliName(c))+'</b>. No note. There never is.');
+}
+function takeLoot(accept){
+  const k=S.counter; if(!k||k.kind!=='loot') return;
+  const b=k.b, c=k.c;
+  if(!accept){
+    log('You tell them to take the crate somewhere else. <span class="pos">Heat stays where it is.</span>');
+    c.loyal=Math.max(0,c.loyal-1); SFX.tap(); closeCounter(); return;
+  }
+  addCash(b.cash,$('s-cash'));
+  let mt=[];
+  for(const k2 in b.mats){ S.mat[k2]=(S.mat[k2]||0)+b.mats[k2]; mt.push(MAT(k2).e+b.mats[k2]); }
+  addHeat(b.heat); c.loyal+=2;
+  if(b.bp&&!S.bp[b.bp]){
+    S.bp[b.bp]=1; addPat(4);
+    toast('📜 Stolen blueprint: '+BP(b.bp).n,'It was in the crate, wrapped in a tea towel. '+esc(BP(b.bp).d)+
+      ' <span style="color:var(--accent-2)">You can build it now and you did not pay for it.</span>','good');
+    log('The crate had <b>'+BP(b.bp).n+'</b> in it. You can build that now.');
+  }
+  SFX.cash();
+  log('Crate accepted: <b>'+money(b.cash)+'</b>'+(mt.length?' and '+mt.join(' '):'')+'. <span class="neg">Heat +'+b.heat+'.</span>');
+  closeCounter();
+}
+function buyBack(accept){
+  const k=S.counter; if(!k||k.kind!=='return') return;
+  if(!accept){
+    log('You decline the wreck. <b>'+esc(cliName(k.c))+'</b> puts it in a bin outside, pointedly.');
+    SFX.tap(); closeCounter(); return;
+  }
+  if(S.cash<k.price){ SFX.bad(); return; }
+  addCash(-k.price,$('s-cash'));
+  S.dmg.push({uid:S.uid++, gid:k.g.id, cond:k.cond});
+  SFX.clunk();
+  log('Bought back the broken '+esc(k.g.n)+' for <b>'+money(k.price)+'</b>. Refurbish it or strip it for parts.');
+  if(!S.tips.dmg){ S.tips.dmg=1; setTimeout(()=>toast('Damaged returns',
+    'Wreckage is the cheapest stock you will ever own. <b>Refurbish</b> it back onto the shelf, or <b>strip</b> it for materials and schematics.'),500); }
+  closeCounter();
+}
+
+/* ---------- events (funny, recoverable) ---------- */
+function queueEvent(id,c){ S.evQ=S.evQ||[]; S.evQ.push({id,c}); }
+function openEvent(id,c){
+  S.evSeen[id]=1;
+  S.counter={kind:'event', id, c, wait:60, waitMax:60};
+  SFX.alarm();
+  if(id==='gloves'){
+    /* funny setback: the left-handed shipment */
+    const lost=S.stock.gloves||0;
+    if(lost) delete S.stock.gloves;
+    S.stock.lglove=(S.stock.lglove||0)+lost+6;
+    log('<span class="neg">A pallet of gloves arrives. Every glove on it is left-handed.</span>');
+  }
+  if(id==='detect') log('<span class="neg">Somebody followed a paper trail to your counter.</span>');
+  if(id==='inspect') log('<span class="neg">A man with a clipboard would like a word about your stock list.</span>');
+}
+function resolveEvent(choice){
+  const k=S.counter; if(!k||k.kind!=='event') return;
+  const id=k.id, c=k.c;
+  if(id==='gloves'){
+    if(choice==='pair'){
+      const cost=Math.round(40+S.rep*2);
+      if(S.cash<cost){ SFX.bad(); return; }
+      addCash(-cost,$('s-cash'));
+      const n=S.stock.lglove||0; delete S.stock.lglove;
+      S.stock.gloves=(S.stock.gloves||0)+Math.floor(n/2);
+      log('Paid '+money(cost)+' to have the pallet sorted. '+Math.floor(n/2)+' honest pairs recovered.');
+      SFX.weld();
+    } else {
+      log('You shelve them as they are and wait. Somebody, somewhere, only has one hand free.');
+      S.waitSin=1; SFX.tap();
+      toast('Left-Handed Gloves',(S.stock.lglove||0)+' left gloves at '+money(priceOf(GOOD('lglove')))+' each. Worth almost nothing. '+
+        'Unless a very specific customer walks in, which — given your clientele — is only a matter of time.');
+    }
+  }
+  if(id==='inspect'){
+    if(choice==='bribe'){
+      const cost=Math.round(120+S.heat*8);
+      if(S.cash<cost){ SFX.bad(); return; }
+      addCash(-cost,$('s-cash')); addHeat(-22);
+      log('You pay '+money(cost)+' for a clipboard to be filled in wrongly. <span class="pos">Heat −22.</span>'); SFX.cash();
+    } else if(choice==='hide'){
+      const keys=Object.keys(S.stock).filter(k2=>GOOD(k2).t>0);
+      if(keys.length){ const k2=pick(keys); S.stock[k2]--; if(S.stock[k2]<=0) delete S.stock[k2];
+        log('You shove the '+esc(GOOD(k2).n)+' behind the water heater. It does not survive the water heater.'); }
+      else log('There is nothing on the shelf he could object to. He objects to the shelf.');
+      addHeat(-16); S.closed=8;
+      log('<span class="pos">Heat −16.</span> Shut for eight seconds of "stocktake".'); SFX.clunk();
+    } else {
+      if(Math.random()<0.4){ addHeat(-10); log('You stonewall. He admires the filing. <span class="pos">Heat −10.</span>'); SFX.done(); }
+      else { addHeat(12); log('<span class="neg">You stonewall. He writes for a long time. Heat +12.</span>'); SFX.bad(); }
+    }
+  }
+  if(id==='detect'){
+    const nm=c?cliName(c):'your client';
+    if(choice==='bribe'){
+      const cost=Math.round(200+S.heat*10);
+      if(S.cash<cost){ SFX.bad(); return; }
+      addCash(-cost,$('s-cash')); addHeat(-28);
+      log('The detective accepts a consultancy fee. <span class="pos">Heat −28.</span>'); SFX.cash();
+    } else if(choice==='give'){
+      if(c){ c.rep=Math.max(0,c.rep*0.5); c.state='dormant'; c.t=90; c.press=0; c.loyal-=4; }
+      addHeat(-30);
+      log('<span class="neg">You give up '+esc(nm)+'. Heat −30. They will remember, and they will tell people.</span>'); SFX.bad();
+    } else {
+      addHeat(14); if(c){ c.loyal+=3; c.press=0; queueBring(c,{kind:'loot',cash:Math.round(180+S.rep*8),mats:{metal:4,wire:3},heat:2}); }
+      log('You deny everything, loudly, for forty minutes. <span class="neg">Heat +14</span> — and '+esc(nm)+' hears about it.'); SFX.done();
+      toast('Loyalty','You did not give them up. '+esc(nm)+' is sending something over as a thank-you. Word gets round both ways.','good');
+    }
+  }
+  closeCounter();
+}
+
+/* ---------- bench / shelf / junk ---------- */
+function stripJunk(el){
+  if(S.junk<=0) return;
+  S.junk--;
+  const n=3+S.up.alley;
+  const got={};
+  const pool=['metal','metal','cloth','cloth','wire','chem'];
+  for(let i=0;i<n;i++){ const k=pick(pool); got[k]=(got[k]||0)+1; S.mat[k]=(S.mat[k]||0)+1; }
+  if(S.rep>20 && Math.random()<0.14){ got.optic=(got.optic||0)+1; S.mat.optic++; }
+  const parts=Object.keys(got).map(k=>MAT(k).e+got[k]).join(' ');
+  if(el) popAt(el,parts,'');
+  SFX.clunk();
+  if(Math.random()<0.34) addSch(1);
+  log('Stripped a junk crate: '+parts+'.');
+}
+function buyMat(id,n,el){
+  const c=matCost(id)*n;
+  if(S.cash<c){ SFX.bad(); return; }
+  addCash(-c,el); S.mat[id]=(S.mat[id]||0)+n; SFX.cash();
+}
+function startBuild(id,isComp){
+  if(S.bench.length>=benchSlots()) return;
+  const def=isComp? COMPS.find(x=>x.id===id) : GOOD(id);
+  const r=isComp? def.r : def.r;
+  if(!r||!canAfford(r)){ SFX.bad(); return; }
+  if(!isComp && shelfCount()>=shelfCap()){ log('<span class="neg">No shelf space.</span>'); SFX.bad(); return; }
+  for(const k in r) S.mat[k]-=r[k];
+  const time=def.time/buildSpeed();
+  S.bench.push({id, comp:!!isComp, t:time, max:time});
+  SFX.weld();
+}
+function finishBuild(b){
+  if(b.comp){ S.mat[b.id]=(S.mat[b.id]||0)+1; SFX.done();
+    log('Built a <b>'+esc(MAT(b.id).n)+'</b>.');
+    if(!S.made[b.id]){ S.made[b.id]=1; addSch(2); addPat(1);
+      if(b.id==='laser') toast('🔆 Laser Module','Board, optic, cell — three things into one thing, and that one thing goes into the expensive things. This is where the margins live.','good'); }
+    return true;
+  }
+  if(shelfCount()>=shelfCap()) return false;
+  S.stock[b.id]=(S.stock[b.id]||0)+1;
+  const g=GOOD(b.id);
+  SFX.done();
+  if(!S.made[b.id]){ S.made[b.id]=1; addSch(2); addPat(1); log('First <b>'+esc(g.n)+'</b> on the shelf. <b>+2 schematics</b>'); }
+  return true;
+}
+function sellOne(id,el){
+  if(!S.stock[id]) return;
+  const g=GOOD(id); const p=Math.round(priceOf(g)*(g.t>=2?0.7:1));
+  S.stock[id]--; if(S.stock[id]<=0) delete S.stock[id];
+  addCash(p,el); S.sold++; addRep(clamp(p/420,0.02,0.4)); addHeat(clamp(p/300,0.1,2));
+  SFX.cash();
+  return p;
+}
+function refurb(d){
+  const g=GOOD(d.gid);
+  const cost=Math.max(2,Math.round(g.price*0.18*(1-d.cond)));
+  if(S.cash<cost){ SFX.bad(); return; }
+  if(shelfCount()>=shelfCap()){ log('<span class="neg">No shelf space.</span>'); SFX.bad(); return; }
+  addCash(-cost,$('s-cash'));
+  S.dmg=S.dmg.filter(x=>x!==d);
+  S.stock[d.gid]=(S.stock[d.gid]||0)+1;
+  SFX.weld();
+  log('Refurbished the '+esc(g.n)+' for <b>'+money(cost)+'</b>. Back on the shelf at '+money(priceOf(g))+'.');
+}
+function stripDmg(d){
+  const g=GOOD(d.gid);
+  S.dmg=S.dmg.filter(x=>x!==d);
+  const got={};
+  if(g.r) for(const k in g.r){ const n=Math.max(1,Math.round(g.r[k]*rnd(0.4,0.8))); got[k]=n; S.mat[k]=(S.mat[k]||0)+n; }
+  else { got.cloth=1; S.mat.cloth++; }
+  addSch(1+g.t*2);
+  SFX.clunk();
+  log('Stripped the '+esc(g.n)+': '+Object.keys(got).map(k=>MAT(k).e+got[k]).join(' ')+' and <b>'+(1+g.t*2)+' schematics</b>.');
+}
+function research(id){
+  const b=BP(id); if(!b||S.bp[id]) return;
+  if(b.req&&!S.bp[b.req]) return;
+  if(S.sch<b.c){ SFX.bad(); return; }
+  S.sch-=b.c; S.bp[id]=1; addPat(4); flash('s-sch'); SFX.reveal();
+  toast('📐 '+b.n, esc(b.d),'good');
+  log('Researched <b>'+esc(b.n)+'</b>.');
+}
+
+/* ---------- heat actions ---------- */
+function launderCost(){ return Math.round((60+S.heat*7)*(hasBay('front')?0.5:1)); }
+function launder(){
+  const c=launderCost();
+  if(S.cash<c||S.heat<5){ SFX.bad(); return; }
+  addCash(-c,$('s-cash')); addHeat(-16); SFX.cash();
+  log('Ran '+money(c)+' through the fancy-dress side of the business. <span class="pos">Heat −16.</span>');
+}
+function shred(){
+  if(S.sch<8||S.heat<5){ SFX.bad(); return; }
+  S.sch-=8; addHeat(-24); flash('s-sch'); SFX.clunk();
+  log('Fed eight schematics into the shredder. <span class="pos">Heat −24.</span> You will miss those.');
+}
+function stocktake(){
+  if(S.closed>0||S.heat<5) return;
+  S.closed=22; addHeat(-30); SFX.tap();
+  log('CLOSED FOR STOCKTAKE. <span class="pos">Heat −30.</span> No customers, no walk-ins, no income for 22 seconds.');
+}
+
+/* ---------- simulation ---------- */
+const TICK=0.1;
+function sim(dt){
+  S.t+=dt; S.dayT+=dt;
+  if(S.dayT>=75){ S.dayT-=75; S.day++; flash('s-day'); dayTurn(); }
+  if(S.closed>0) S.closed-=dt;
+
+  /* junk crates: the floor of the economy. never lets you stall. */
+  S.junkT+=dt;
+  const jrate=Math.max(4.5, 9-S.up.alley*0.9-(S.staff.ozzy?1.5:0));
+  const jcap=3+S.up.alley;
+  if(S.junkT>=jrate){ S.junkT=0; if(S.junk<jcap) S.junk++; }
+  /* earned safety valve */
+  if(S.cash<12 && !shelfCount() && S.junk<=0 && !S.bench.length){
+    S.junk=2; log('<b>A crate appears by the back door.</b> No note. The alley looks after its own, slowly.');
+  }
+  if(S.staff.ozzy && S.junk>0){ S.ozT=(S.ozT||0)+dt; if(S.ozT>3.2){ S.ozT=0; stripJunk(null); } }
+  if(hasBay('chem')){ S.chT=(S.chT||0)+dt; if(S.chT>10){ S.chT=0; S.mat.chem++; } }
+
+  /* bench */
+  for(let i=S.bench.length-1;i>=0;i--){
+    const b=S.bench[i];
+    if(b.t>0){ b.t-=dt; if(b.t<=0){ b.t=0; b.done=true; } }
+    if(b.done){ if(finishBuild(b)) S.bench.splice(i,1); }
+  }
+  /* fabricators re-queue whatever you built most recently that they can afford */
+  if(S.staff.fab){
+    S.fabT=(S.fabT||0)+dt;
+    if(S.fabT>2.2){ S.fabT=0;
+      if(S.bench.length<benchSlots()){
+        const comp=COMPS.filter(c=>(!c.bp||S.bp[c.bp])&&canAfford(c.r));
+        const goods=GOODS.filter(g=>g.r&&(!g.bp||S.bp[g.bp])&&canAfford(g.r));
+        if(goods.length && shelfCount()<shelfCap()){
+          goods.sort((a,b)=>priceOf(b)-priceOf(a)); startBuild(goods[0].id,false);
+        } else if(comp.length){ comp.sort((a,b)=>b.time-a.time); startBuild(comp[0].id,true); }
+      }
+    }
+  }
+
+  /* walk-in trade */
+  const wrate=(S.staff.priya?0.13:0.05)*(hasBay('disp')?1.8:1)*traffic();
+  const walkKeys=Object.keys(S.stock).filter(x=>GOOD(x).t<=1);
+  if(walkKeys.length && Math.random()<wrate*dt){
+    const k=pick(walkKeys);
+    const p=sellOne(k,null);
+    if(p!=null) log('A walk-in buys a '+esc(GOOD(k).n)+' for <b>'+money(p)+'</b>.');
+  }
+
+  /* clients */
+  for(const c of S.clients){
+    if(c.t>0) c.t-=dt;
+    if(c.state==='away' && c.t<=0) resolveScheme(c);
+    else if(c.state==='dormant' && c.t<=0){ c.state='browsing'; c.t=rnd(4,12);
+      log('<b>'+esc(cliName(c))+'</b> is back on the street. Older. Not wiser.'); }
+    c.press=Math.max(0,c.press-0.012*dt);
+  }
+
+  /* counter patience */
+  if(S.counter&&S.counter.wait!=null){
+    S.counter.wait-=dt;
+    if(S.counter.wait<=0){
+      const k=S.counter;
+      if(k.kind==='client'){ k.c.state='browsing'; k.c.t=rnd(10,20);
+        log('<span class="neg"><b>'+esc(cliName(k.c))+'</b> gives up waiting and leaves.</span>'); }
+      else if(k.kind==='return'||k.kind==='loot') log('<span class="neg">They got bored and took it away.</span>');
+      else if(k.kind==='event'){ addHeat(8); log('<span class="neg">You ignored the man with the clipboard. Heat +8.</span>'); }
+      SFX.bad(); closeCounter();
+    }
+  } else if(!S.counter){
+    S.nextCust-=dt;
+    if(S.nextCust<=0) spawnVisitor();
+  }
+
+  /* demand decays back toward normal */
+  for(const k in S.dem){ const d=S.dem[k]; if(d>1) S.dem[k]=Math.max(1,d-0.012*dt); else if(d<1) S.dem[k]=Math.min(1,d+0.006*dt); }
+
+  /* heat drifts down; the sign keeps drawing eyes */
+  let hd=0.16*(hasBay('front')?2:1);
+  addHeat(-hd*dt + S.up.sign*0.03*dt);
+  if(S.heat>=99 && !S.raid){ S.raid=45; toast('🚨 Raid warning','Somebody has signed a warrant. You have about 45 seconds. '+
+    'Launder, shred, or shut for stocktake — any one of them is enough. If you do nothing they take the shelf, and only the shelf.','bad'); SFX.alarm(); }
+  if(S.raid>0){
+    S.raid-=dt;
+    if(S.heat<90){ S.raid=0; log('<span class="pos">The warrant goes cold. Nobody comes.</span>'); toast('It goes quiet','You dropped the heat in time. Nothing happened, which is the whole point.','good'); }
+    else if(S.raid<=0){
+      const n=shelfCount(); S.stock={}; S.heat=24; S.raid=0;
+      toast('They took the shelf','Six people in windbreakers removed '+n+' items and a filing cabinet with nothing in it. '+
+        'You keep your cash, your materials, your blueprints, your staff and every client you have. Restock and carry on.','bad');
+      log('<span class="neg"><b>RAIDED.</b> '+n+' items off the shelf. Everything else intact. Heat down to 24.</span>'); SFX.alarm();
+    }
+  }
+
+  /* random events */
+  S.evT-=dt;
+  if(S.evT<=0 && !S.counter){
+    S.evT=rnd(70,120);
+    if(!S.evSeen.gloves && S.day>=2 && (S.stock.gloves||0)>=0) queueEvent('gloves',null);
+    else if(S.heat>=45) queueEvent('inspect',null);
+    else S.evT=rnd(40,70);
+  }
+  /* the Sinistral turns up for the left-handed gloves */
+  if(S.waitSin && (S.stock.lglove||0)>0){
+    S.sinT=(S.sinT||0)+dt;
+    if(S.sinT>rnd(25,30) && !S.counter){
+      S.waitSin=0; S.sinT=0;
+      const n=S.stock.lglove; delete S.stock.lglove;
+      const pay=n*46;
+      addCash(pay,$('s-cash')); addRep(4); addPat(2); S.arch.sinistral=1;
+      SFX.reveal();
+      toast('🧤 The Sinistral','"All of them. Yes. All of the left ones." Paid '+money(pay)+' for '+n+
+        ' left-handed gloves without blinking, and asked to be told next time. Patience: occasionally a strategy.','good');
+      log('<b>The Sinistral</b> bought every left-handed glove for <b>'+money(pay)+'</b>.');
+    }
+  }
+  /* tips */
+  if(S.t>26 && !S.tips.bench && shelfCount()===0 && !S.bench.length){ S.tips.bench=1;
+    toast('Build something','Strip a junk crate for materials, then build a <b>Domino Mask</b> from one bolt of cloth on the Bench tab. Masks sell themselves.'); }
+}
+function dayTurn(){
+  log('<b>Day '+S.day+'.</b> You unlock the door and turn the sign around.');
+  if(S.day===2&&!S.tips.d2){ S.tips.d2=1;
+    toast('Two things move the money','<b>Demand</b> rises for whatever your clients just succeeded with — watch the Shelf. '+
+      'And a <b>loadout</b> that covers every need on the brief is worth more than one expensive item.'); }
+}
+
+/* =====================================================================
+   RENDER — two layers.
+   build*() rewrites innerHTML and runs only when a cheap signature
+   string changes. paint*() runs every frame and writes only
+   textContent / style.width / disabled.
+   ===================================================================== */
+const SIG={};
+function sigChanged(k,v){ if(SIG[k]===v) return false; SIG[k]=v; return true; }
+
+function render(){
+  paintStats();
+  if(sigChanged('plan', S.stage+'|'+S.bays.join(',')+'|'+Math.min(14,shelfCount())+'|'+S.junk+'|'+((S.staff.ozzy?1:0)+(S.staff.priya?1:0)+(S.staff.fab||0)+(S.staff.sheila?1:0)+(S.staff.tick?1:0)))) buildPlan();
+  if(sigChanged('warn', S.raid>0?'r':(S.closed>0?'c':'-'))) buildWarn();
+  paintWarn();
+  if(sigChanged('counter', counterSig())) buildCounter();
+  paintCounter();
+  if(sigChanged('heat', heatSig())) buildHeat();
+  paintHeat();
+  if(sigChanged('tab', tabSig())) buildTab();
+  paintTab();
+  if(sigChanged('hz', hzSig())) buildHorizon();
+  paintHorizon();
+}
+function setText(id,v){ const e=$(id); if(e&&e.textContent!==String(v)) e.textContent=v; }
+function paintStats(){
+  setText('s-cash', money(S.cash).replace('$',''));
+  setText('s-rep', Math.floor(S.rep));
+  setText('s-heat', Math.floor(S.heat));
+  setText('s-sch', num(S.sch));
+  setText('s-day', S.day);
+  setText('b-bench', S.bench.length+'/'+benchSlots());
+  setText('b-shelf', shelfCount()+'/'+shelfCap());
+  setText('b-cli', S.clients.filter(c=>!c.plant).length);
+  setText('mutebtn', S.muted?'♪̸':'♪');
+  const hs=$('heatstat');
+  if(hs){ const t=heatTier();
+    hs.classList.toggle('hot', t===2); hs.classList.toggle('crit', t===3); }
+  const bs=$('brandsub');
+  const names=['','Suspicious Storefront','Specialty Store','The Warehouse'];
+  setText('brandsub', names[S.stage]+' · Prototype');
+}
+
+/* ---------- premises plan (the screen visibly changes) ---------- */
+function room(x,y,w,h,label,sub,accent){
+  return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6" '+
+    'fill="'+(accent?'#241d1c':'var(--panel-2)')+'" stroke="'+(accent?'var(--accent)':'var(--line)')+'"/>'+
+    '<text x="'+(x+8)+'" y="'+(y+17)+'" font-size="10.5" fill="'+(accent?'#f0958e':'var(--ink-dim)')+'" font-family="system-ui">'+label+'</text>'+
+    (sub?'<text x="'+(x+8)+'" y="'+(y+31)+'" font-size="9" fill="var(--ink-faint)" font-family="system-ui">'+sub+'</text>':'');
+}
+function worker(x,y,e,delay){
+  return '<text class="wk" x="'+x+'" y="'+y+'" font-size="13" style="animation-delay:'+delay+'s">'+e+'</text>';
+}
+function fix(x,y,w,h,c){ return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="2" fill="'+(c||'#2c2624')+'" stroke="#413a36"/>'; }
+function shelfRow(x,y,n,w){ let h=''; for(let i=0;i<n;i++) h+=fix(x+i*(w+4),y,w,7,'#33292a'); return h; }
+function crates(x,y,n){ let h=''; for(let i=0;i<3;i++) h+='<rect x="'+(x+i*20)+'" y="'+y+'" width="16" height="16" rx="2" fill="#1d1a18" stroke="#2e2925" stroke-dasharray="2 2"/>';
+  for(let i=0;i<n;i++) h+=fix(x+i*20,y,16,16,'#3a2f28'); return h; }
+function dots(x,y,n,c){ let h=''; for(let i=0;i<n;i++) h+='<circle cx="'+(x+i*9)+'" cy="'+y+'" r="2.4" fill="'+(c||'var(--accent)')+'" opacity=".6"/>'; return h; }
+function buildPlan(){
+  const p=$('plan'); let h='';
+  h+='<defs><pattern id="hz" width="10" height="10" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">'+
+     '<rect width="10" height="10" fill="#1d1a18"/><rect width="5" height="10" fill="var(--hazard)" opacity="0.55"/></pattern></defs>';
+  if(S.stage===1){
+    p.setAttribute('viewBox','0 0 620 130');
+    h+=room(10,14,250,102,'SHOP FLOOR','counter · shelves · one stool');
+    h+=room(272,14,180,102,'BACK ROOM','workbench · junk crates');
+    h+=room(464,14,146,102,'ALLEY','where the crates come from');
+    h+=shelfRow(22,44,7,28)+shelfRow(22,58,7,28);
+    h+=fix(22,96,232,11,'#38302c');
+    h+=dots(30,84,Math.min(12,shelfCount()));
+    h+=fix(284,50,120,9,'#38302c')+fix(284,72,56,24)+crates(284,90,3);
+    h+=crates(474,74,Math.min(3,S.junk));
+    h+=worker(60,80,'🧑',0);
+    if(S.staff.ozzy) h+=worker(300,80,'👷',0.7);
+    if(S.staff.priya) h+=worker(120,96,'🧑‍💼',1.3);
+  } else if(S.stage===2){
+    p.setAttribute('viewBox','0 0 620 130');
+    h+=room(10,14,176,102,'SHOP FLOOR','the original unit');
+    h+=room(196,14,150,102,'WORKSHOP','benches · parts bins');
+    h+=room(356,14,150,102, S.bays[0]?BAYD(S.bays[0]).n.toUpperCase():'BAY 1 — EMPTY',
+            S.bays[0]?BAYD(S.bays[0]).e+' fitted out':'choose a function', !!S.bays[0]);
+    h+=room(516,14,94,102,'ALLEY','');
+    h+=shelfRow(20,46,5,28)+shelfRow(20,60,5,28)+fix(20,98,156,10,'#38302c');
+    if(S.bays[0]) h+=fix(366,54,56,24)+fix(430,54,56,24)+fix(366,86,120,9,'#38302c');
+    h+=dots(26,84,Math.min(14,shelfCount()));
+    h+=fix(206,52,130,8,'#38302c')+fix(206,68,44,22)+fix(258,68,44,22)+crates(206,96,4);
+    h+=crates(526,74,Math.min(3,S.junk));
+    h+=worker(48,80,'🧑',0);
+    if(S.staff.ozzy) h+=worker(216,80,'👷',0.5);
+    if(S.staff.priya) h+=worker(96,96,'🧑‍💼',1.1);
+    for(let i=0;i<(S.staff.fab||0);i++) h+=worker(240+i*22,100,'👩‍🏭',0.3*i);
+    if(S.staff.sheila) h+=worker(20,104,'🕶️',1.6);
+  } else {
+    p.setAttribute('viewBox','0 0 620 170');
+    h+=room(10,10,128,72,'FRONT','kept for looks');
+    h+=room(148,10,150,72,'WORKSHOP','assembly');
+    h+=room(308,10,150,72, S.bays[0]?BAYD(S.bays[0]).n.toUpperCase():'BAY 1 — EMPTY', S.bays[0]?BAYD(S.bays[0]).e+' fitted out':'choose', !!S.bays[0]);
+    h+=room(468,10,142,72,'OFFICE','paperwork that lies');
+    h+=room(10,92,290,68, S.bays[1]?BAYD(S.bays[1]).n.toUpperCase():'BAY 2 — EMPTY', S.bays[1]?BAYD(S.bays[1]).e+' fitted out':'choose a function', !!S.bays[1]);
+    h+=room(310,92,180,68, S.bays[2]?BAYD(S.bays[2]).n.toUpperCase():'BAY 3 — EMPTY', S.bays[2]?BAYD(S.bays[2]).e+' fitted out':'choose a function', !!S.bays[2]);
+    h+='<rect x="500" y="92" width="110" height="68" rx="6" fill="url(#hz)" stroke="var(--line)"/>';
+    h+='<rect x="502" y="114" width="98" height="16" rx="3" fill="#15120f" opacity=".82"/>';
+    h+='<text x="508" y="126" font-size="10" fill="var(--hazard)" font-family="system-ui" font-weight="700">LOADING DOCK</text>';
+    h+=shelfRow(18,44,4,24)+shelfRow(18,55,4,24)+dots(22,72,Math.min(10,shelfCount()));
+    if(S.bays[0]) h+=fix(318,46,58,20)+fix(384,46,58,20)+fix(318,70,124,8,'#38302c');
+    if(S.bays[1]) h+=fix(20,112,80,20)+fix(108,112,80,20)+fix(196,112,80,20);
+    if(S.bays[2]) h+=fix(320,112,70,20)+fix(398,112,70,20);
+    h+=fix(158,48,130,7,'#38302c')+fix(158,59,38,14)+fix(202,59,38,14)+crates(252,58,2);
+    h+=fix(20,134,120,8,'#38302c')+fix(160,134,120,8,'#38302c')+fix(320,134,150,8,'#38302c');
+    h+=dots(24,150,Math.min(12,shelfCount()),'var(--accent-2)');
+    h+=worker(40,66,'🧑',0);
+    if(S.staff.ozzy) h+=worker(170,66,'👷',0.5);
+    if(S.staff.priya) h+=worker(70,76,'🧑‍💼',1.1);
+    for(let i=0;i<(S.staff.fab||0);i++) h+=worker(196+i*24,76,'👩‍🏭',0.3*i);
+    if(S.staff.sheila) h+=worker(16,80,'🕶️',1.4);
+    if(S.staff.tick) h+=worker(486,156,'👩‍🔬',0.9);
+  }
+  p.innerHTML=h;
+  const names=['','A Suspicious Storefront','Specialty Store','The Warehouse'];
+  const subs=['','One room, one counter, one alley full of other people’s mistakes.',
+    'Knocked through next door. One bay is yours to assign.',
+    'Off the high street. Three bays and a dock, and nobody reads the sign.'];
+  let chips='';
+  for(let i=0;i<S.bays.length;i++){
+    chips+='<span class="baychip'+(S.bays[i]?' on':'')+'">'+(S.bays[i]?BAYD(S.bays[i]).e+' '+BAYD(S.bays[i]).n:'bay '+(i+1)+' — unassigned')+'</span>';
+  }
+  $('stagerow').innerHTML='<span class="nm">'+names[S.stage]+'</span><span class="sub">'+subs[S.stage]+'</span>'+
+    (chips?'<span style="flex:1 0 100%;display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">'+chips+'</span>':'');
+}
+
+/* ---------- warning bar ---------- */
+function buildWarn(){
+  const w=$('warn');
+  if(S.raid>0) w.innerHTML='<div class="warnbar"><b>&#128680; WARRANT SIGNED.</b> <span>Drop the heat below 90 and nothing happens. Otherwise they take the shelf — and only the shelf.</span><span class="rt" id="raidrt"></span></div>';
+  else if(S.closed>0) w.innerHTML='<div class="warnbar" style="background:#1d2018;border-color:#4d6b57"><b style="color:var(--accent-2)">CLOSED FOR STOCKTAKE.</b> <span>No trade. Heat falling.</span><span class="rt" id="raidrt" style="color:var(--accent-2)"></span></div>';
+  else w.innerHTML='';
+}
+function paintWarn(){
+  const e=$('raidrt'); if(!e) return;
+  setText('raidrt', (S.raid>0? S.raid : S.closed).toFixed(1)+'s');
+}
+
+/* ---------- counter ---------- */
+function counterSig(){
+  const k=S.counter;
+  if(!k) return 'none|'+(S.junk>0?1:0)+'|'+shelfCount();
+  if(k.kind==='client'){
+    let s='c'+k.c.uid+'|'+k.scheme.id+'|'+(k.plant?'p':'-')+'|'+rankOf(k.c);
+    for(const g in k.sel) s+='|'+g+':'+k.sel[g];
+    s+='|'+Object.keys(S.stock).map(x=>x+S.stock[x]).join(',')+'|'+Math.floor(S.cash/25)+'|'+Math.floor(S.rep);
+    return s;
+  }
+  if(k.kind==='return') return 'r'+k.c.uid+'|'+k.g.id+'|'+k.price+'|'+(S.cash>=k.price?1:0);
+  if(k.kind==='loot') return 'l'+k.c.uid+'|'+k.b.cash;
+  if(k.kind==='event') return 'e'+k.id+'|'+Math.floor(S.cash/50)+'|'+Math.floor(S.heat/5);
+  return 'x';
+}
+function cliHead(c,plant){
+  const r=rankOf(c);
+  return '<div class="cust"><div class="avatar'+(r>=4?' leg':'')+'">'+c.e+'</div><div>'+
+    '<div class="who">'+esc(plant?c.n:cliName(c))+'<span class="tag r'+r+'">'+RANKS[r].n+'</span></div>'+
+    '<div class="role">'+esc(c.spec)+' · '+c.runs+' job'+(c.runs===1?'':'s')+' · '+c.wins+' clean</div>'+
+    '<div class="line">“'+esc(c.line)+'”</div>'+
+    '</div></div>';
+}
+function buildCounter(){
+  const el=$('counter'), k=S.counter;
+  if(!k){
+    let h='<div class="empty"><div class="big">🔔</div>'+
+      '<div style="max-width:330px">Nobody at the counter. Somebody out there is about to have a bad idea, and they will need equipment for it.</div>'+
+      '<div class="bell"><i id="bellbar" style="width:0%"></i></div>'+
+      '<div style="margin-top:6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)">the back alley — strip a crate for parts</div>'+
+      '<div class="crates">';
+    for(let i=0;i<(3+S.up.alley);i++)
+      h+='<button class="crate" data-act="strip"'+(i<S.junk?'':' disabled')+'>'+(i<S.junk?'🗃️':'·')+'</button>';
+    h+='</div></div>';
+    el.innerHTML=h; return;
+  }
+  if(k.kind==='client'){ el.innerHTML=clientHTML(k); return; }
+  if(k.kind==='return'){
+    const g=k.g;
+    el.innerHTML=cliHead(k.c)+
+      '<div class="brief"><div class="sc">'+g.e+' They are holding a <b>broken '+esc(g.n)+'</b> — '+
+      Math.round(k.cond*100)+'% of a '+esc(g.n)+', generously. They would like something for it.</div></div>'+
+      '<div class="summary"><div class="sline">Buy the wreck back<span class="r">'+money(k.price)+'</span></div>'+
+      '<div style="font-size:12px;color:var(--ink-faint);margin-top:6px">Refurbish it onto the shelf, or strip it for materials and schematics. '+
+      'Wreckage is the cheapest stock you will ever own.</div></div>'+
+      '<div class="actions"><button class="btn primary" data-act="buyback"'+(S.cash<k.price?' disabled':'')+'>Buy it back<span class="sub">'+money(k.price)+'</span></button>'+
+      '<button class="btn ghost" data-act="nobuyback">Not interested</button></div>'+
+      patienceHTML(k);
+    return;
+  }
+  if(k.kind==='loot'){
+    const b=k.b;
+    let mt=Object.keys(b.mats).map(x=>MAT(x).e+' '+b.mats[x]+' '+esc(MAT(x).n)).join(' · ');
+    el.innerHTML=cliHead(k.c)+
+      '<div class="brief"><div class="sc">📦 A crate from a job that went their way. '+
+      (b.big?'<b>A large crate.</b> ':'')+'It is, in the strictest sense, stolen.</div>'+
+      '<div class="needs"><span class="chip met">'+money(b.cash)+' cash</span>'+
+      (mt?'<span class="chip met">'+mt+'</span>':'')+
+      (b.bp&&!S.bp[b.bp]?'<span class="chip tagd">📜 a blueprint</span>':'')+
+      '<span class="chip tagd">heat +'+b.heat+'</span></div></div>'+
+      '<div class="summary"><div style="font-size:12.5px;color:var(--ink-dim)">Taking it is free money and traceable goods. '+
+      'Refusing it costs you nothing but the money, and a little of their goodwill.</div></div>'+
+      '<div class="actions"><button class="btn primary" data-act="takeloot">Take the crate<span class="sub">heat +'+b.heat+'</span></button>'+
+      '<button class="btn alt" data-act="refuseloot">Never seen it<span class="sub">no heat</span></button></div>'+
+      patienceHTML(k);
+    return;
+  }
+  if(k.kind==='event'){ el.innerHTML=eventHTML(k); return; }
+}
+function patienceHTML(k){
+  const pips=5, on=Math.ceil(clamp(k.wait/k.waitMax,0,1)*pips);
+  let h='<div class="patience">waiting';
+  for(let i=0;i<pips;i++) h+='<span class="pip'+(i<on?'':' out')+'" id="pp'+i+'"></span>';
+  return h+'</div>';
+}
+function clientHTML(k){
+  const c=k.c, sc=k.scheme, L=loadout(c,sc,k.sel), bud=budgetOf(c);
+  let h=cliHead(c,k.plant);
+  h+='<div class="brief"><div class="sc">'+sc.e+' Planning <b>'+sc.n+'</b>. Budget <b class="mono">'+money(bud)+'</b>.</div>'+
+     '<div class="needs">';
+  for(const t of sc.need) h+='<span class="chip'+(L.tags[t]?' met':'')+'">'+TAGS[t].e+' '+TAGS[t].n+(L.tags[t]?' ✓':'')+'</span>';
+  h+='</div><div class="nemesis">Nemesis: <b>'+esc(c.nem)+'</b>'+
+     (c.press>0.08?' — currently <b>'+Math.round(c.press*100)+'% interested</b> in them':' — not paying attention yet')+
+     '</div></div>';
+
+  const keys=Object.keys(S.stock);
+  const afford=keys.filter(id=>clientPay(GOOD(id),sc)<=bud);
+  if(!keys.length){
+    h+='<div class="muted">Your shelf is empty. They will wait about as long as anyone waits in a shop with nothing in it.</div>';
+  } else if(!afford.length){
+    h+='<div class="muted">Nothing on your shelf is inside their budget of '+money(bud)+'.<br>'+
+       'Cheap stock is not a waste of bench time — it is how a Nobody becomes a customer worth having.</div>';
+  } else {
+    h+='<div class="sechead">Sell them a loadout</div>';
+    keys.sort((a,b)=>GOOD(b).t-GOOD(a).t||priceOf(GOOD(b))-priceOf(GOOD(a)));
+    for(const id of keys){
+      const g=GOOD(id), have=S.stock[id], n=k.sel[id]||0;
+      const pay=clientPay(g,sc);
+      const fits=g.tags.some(t=>sc.need.indexOf(t)>=0);
+      const over=L.cost+pay>bud;
+      h+='<div class="pickrow'+(n?' sel':'')+'"><div class="g">'+g.e+'</div><div class="t">'+
+        '<b>'+esc(g.n)+'</b><small>'+g.tags.map(t=>TAGS[t].e+TAGS[t].n).join(' · ')+
+        ' · pays <span class="mono" style="color:var(--accent)">'+money(pay)+'</span>'+(fits?' <span style="color:var(--accent-2)">fits the brief</span>':'')+
+        ' · '+have+' in stock</small></div>'+
+        '<div class="stepper">'+
+        '<button class="sq" data-act="less" data-id="'+id+'"'+(n?'':' disabled')+'>&minus;</button>'+
+        '<span class="n">'+n+'</span>'+
+        '<button class="sq" data-act="more" data-id="'+id+'"'+(n>=have||over?' disabled':'')+'>+</button>'+
+        '</div></div>';
+    }
+  }
+  const pct=Math.round(L.chance*100);
+  h+='<div class="summary">'+
+     '<div class="sline">Their budget<span class="r">'+money(L.cost)+' / '+money(bud)+'</span></div>'+
+     '<div class="bar bud"><i style="width:'+clamp(L.cost/bud*100,0,100).toFixed(0)+'%"></i></div>'+
+     '<div class="odds"><div class="lab">Estimated odds of the scheme working<b>'+pct+'%</b></div>'+
+     '<div class="bar odds"><i style="width:'+pct+'%"></i></div></div>'+
+     '<div class="sline" style="margin-top:8px">Brief covered <b>'+L.covered+'/'+sc.need.length+'</b>'+
+     '<span class="r">kit weight '+(L.pwr*100).toFixed(0)+'% of '+sc.pw+'</span></div>';
+  if(L.syns.length){
+    h+='<div class="synbox">';
+    for(const s of L.syns) h+= S.syn[s.id]
+      ? '<span class="syn">'+s.e+' '+s.n+' +'+Math.round(s.b*100)+'%</span>'
+      : '<span class="syn unk">⚡ something in this combination clicks</span>';
+    h+='</div>';
+  }
+  if(k.plant && S.staff.sheila) h+='<div class="synbox"><span class="syn unk">🕶️ Sheila is shaking her head at this one</span></div>';
+  h+='</div>';
+  h+='<div class="actions">'+
+     '<button class="btn primary" data-act="sell"'+(L.items.length?'':' disabled')+'>Close the sale<span class="sub">'+money(L.cost)+' now</span></button>'+
+     '<button class="btn alt" data-act="back"'+(L.items.length?'':' disabled')+'>Back them<span class="sub">half now, ¼ of the take</span></button>'+
+     '<button class="btn ghost" data-act="away">Nothing for you<span class="sub">no sale, no heat</span></button>'+
+     '</div>'+patienceHTML(k);
+  if(c.hist.length){
+    h+='<div class="sechead">Their file — you wrote this</div>';
+    for(const e of c.hist.slice(0,3))
+      h+='<div class="histline '+(e.o==='triumph'||e.o==='success'?'good':(e.o==='fiasco'||e.o==='disaster'?'bad':''))+'">'+
+         'Day '+e.day+' · <b>'+e.o+'</b> — '+e.txt.replace(/<[^>]+>/g,'')+'</div>';
+  }
+  return h;
+}
+function eventHTML(k){
+  const id=k.id;
+  if(id==='gloves'){
+    const n=S.stock.lglove||0, cost=Math.round(40+S.rep*2);
+    return '<div class="cust"><div class="avatar">🧤</div><div><div class="who">A Delivery</div>'+
+      '<div class="role">the wrong kind of good news</div></div></div>'+
+      '<div class="brief"><div class="sc">A pallet of gloves has arrived. <b>Every glove on it is left-handed.</b> '+
+      'Your supplier’s invoice says "GLOVES, DRAMATIC, '+n+'" and technically that is true.</div></div>'+
+      '<div class="summary"><div style="font-size:12.5px;color:var(--ink-dim)">You can pay to have the pallet sorted against the last shipment and salvage honest pairs. '+
+      'Or you can shelve '+n+' left gloves at '+money(priceOf(GOOD('lglove')))+' each and trust your clientele.</div></div>'+
+      '<div class="actions"><button class="btn primary" data-act="ev" data-c="pair"'+(S.cash<cost?' disabled':'')+'>Pay to sort the pallet<span class="sub">'+money(cost)+' · keep half as pairs</span></button>'+
+      '<button class="btn alt" data-act="ev" data-c="wait">Shelve them as they are<span class="sub">free · somebody will want these</span></button></div>'+patienceHTML(k);
+  }
+  if(id==='inspect'){
+    const cost=Math.round(120+S.heat*8);
+    return '<div class="cust"><div class="avatar">📋</div><div><div class="who">Compliance Officer Wendell</div>'+
+      '<div class="role">would like a word about your stock list</div>'+
+      '<div class="line">“This is listed as a costume accessory. It has a power cell in it.”</div></div></div>'+
+      '<div class="brief"><div class="sc">He has a clipboard and the unhurried manner of a man who is paid by the hour.</div></div>'+
+      '<div class="actions"><button class="btn primary" data-act="ev" data-c="bribe"'+(S.cash<cost?' disabled':'')+'>Fill the form in wrongly<span class="sub">'+money(cost)+' · heat −22</span></button>'+
+      '<button class="btn alt" data-act="ev" data-c="hide">Hide the good stock<span class="sub">lose one item · heat −16</span></button>'+
+      '<button class="btn ghost" data-act="ev" data-c="deny">Stonewall him<span class="sub">free · could go either way</span></button></div>'+patienceHTML(k);
+  }
+  if(id==='detect'){
+    const nm=k.c?cliName(k.c):'a client of yours';
+    const cost=Math.round(200+S.heat*10);
+    return '<div class="cust"><div class="avatar">🕵️</div><div><div class="who">A Detective</div>'+
+      '<div class="role">followed the paper trail here</div>'+
+      '<div class="line">“Everything they were carrying has your serial numbers filed off it. Badly.”</div></div></div>'+
+      '<div class="brief"><div class="sc">'+esc(nm)+'’s nemesis has traced the equipment to your counter. '+
+      'This is the bill for having a customer who matters.</div></div>'+
+      '<div class="actions"><button class="btn primary" data-act="ev" data-c="bribe"'+(S.cash<cost?' disabled':'')+'>Retain him as a consultant<span class="sub">'+money(cost)+' · heat −28</span></button>'+
+      '<button class="btn alt" data-act="ev" data-c="give">Give up the client<span class="sub">heat −30 · their career halves</span></button>'+
+      '<button class="btn ghost" data-act="ev" data-c="deny">Deny everything<span class="sub">heat +14 · loyalty</span></button></div>'+patienceHTML(k);
+  }
+  return '<div class="muted">—</div>';
+}
+function paintCounter(){
+  const k=S.counter, hint=$('counterhint');
+  if(!k){
+    const b=$('bellbar');
+    if(b) b.style.width=((1-clamp(S.nextCust/custDelay(),0,1))*100).toFixed(0)+'%';
+    if(hint) setText('counterhint','next visitor in '+Math.max(0,S.nextCust).toFixed(1)+'s · '+S.junk+' crate'+(S.junk===1?'':'s')+' waiting');
+    return;
+  }
+  if(hint) setText('counterhint', k.wait!=null? 'leaves in '+Math.max(0,k.wait).toFixed(0)+'s':'');
+  if(k.wait!=null){
+    const pips=5, on=Math.ceil(clamp(k.wait/k.waitMax,0,1)*pips);
+    for(let i=0;i<pips;i++){ const e=$('pp'+i); if(e) e.classList.toggle('out', i>=on); }
+  }
+}
+
+/* ---------- heat panel ---------- */
+function heatSig(){ return heatTier()+'|'+(S.cash>=launderCost()?1:0)+'|'+(S.sch>=8?1:0)+'|'+(S.closed>0?1:0)+'|'+(S.heat>=5?1:0); }
+const HEATNOTE=[
+  'Nobody is looking at you. Sell whatever you like to whoever walks in.',
+  'You are on a list somewhere. Well-known clients come in more often — attention cuts both ways.',
+  'Watched. The walk-in trade is nervous (−25%), and roughly one customer in six is police.',
+  'Exposed. Walk-ins halved, one in four customers is police, and somebody is drafting a warrant.'
+];
+function buildHeat(){
+  const t=heatTier();
+  $('heatbody').innerHTML=
+    '<div class="heatrow"><span class="nm">'+HEATN[t]+'</span><span class="v" id="heatv">0 / 100</span></div>'+
+    '<div class="bar heat"><i id="heatbar" style="width:0%"></i></div>'+
+    '<div class="heatnote">'+HEATNOTE[t]+'</div>'+
+    '<div class="heatacts">'+
+    '<button class="mini go" data-act="launder"'+(S.cash<launderCost()||S.heat<5?' disabled':'')+'>Launder · '+money(launderCost())+' → −16</button>'+
+    '<button class="mini go" data-act="shred"'+(S.sch<8||S.heat<5?' disabled':'')+'>Shred 8 schematics → −24</button>'+
+    '<button class="mini ok" data-act="stocktake"'+(S.closed>0||S.heat<5?' disabled':'')+'>Close for stocktake → −30</button>'+
+    '</div>';
+}
+function paintHeat(){
+  const b=$('heatbar'); if(b) b.style.width=S.heat.toFixed(0)+'%';
+  setText('heatv', Math.floor(S.heat)+' / 100');
+  setText('heathint','traffic ×'+traffic().toFixed(2));
+}
+
+/* ---------- tabs ---------- */
+function tabSig(){
+  const a=[S.tab, Math.floor(S.cash/10), Math.floor(S.rep), Math.floor(S.sch), S.stage, S.bays.join(','),
+           shelfCount(), S.bench.length, benchSlots(), S.junk];
+  if(S.tab==='bench'){ for(const k of MATS) a.push(S.mat[k.id]||0);
+    for(const b of S.bench) a.push(b.id+(b.done?'d':''));
+    for(const d of S.dmg) a.push(d.uid+':'+Math.round(d.cond*10));
+    a.push(Object.keys(S.bp).join(',')); }
+  if(S.tab==='shelf'){ for(const k in S.stock) a.push(k+':'+S.stock[k]+':'+priceOf(GOOD(k)));
+    for(const t of TAGKEYS) a.push(S.dem[t].toFixed(2)); }
+  if(S.tab==='clients') for(const c of S.clients) a.push(c.uid+':'+c.state+':'+Math.ceil(c.t)+':'+Math.round(c.rep)+':'+c.hist.length+':'+(c.bring?c.bring.length:0));
+  if(S.tab==='shop') a.push(JSON.stringify(S.ups), JSON.stringify(S.staff));
+  if(S.tab==='files') a.push(JSON.stringify(S.syn), JSON.stringify(S.made), JSON.stringify(S.arch), JSON.stringify(S.bp), S.reports, S.sold);
+  return a.join('|');
+}
+function buildTab(){
+  const b=$('tabbody');
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on', x.dataset.tab===S.tab));
+  if(S.tab==='bench') b.innerHTML=tabBench();
+  if(S.tab==='shelf') b.innerHTML=tabShelf();
+  if(S.tab==='clients') b.innerHTML=tabClients();
+  if(S.tab==='shop') b.innerHTML=tabShop();
+  if(S.tab==='files') b.innerHTML=tabFiles();
+}
+function paintTab(){
+  if(S.tab==='bench') for(let i=0;i<S.bench.length;i++){
+    const e=$('bb'+i); if(e) e.style.width=(100*(1-S.bench[i].t/S.bench[i].max)).toFixed(0)+'%';
+  }
+  if(S.tab==='clients') for(const c of S.clients){
+    const e=$('cb'+c.uid);
+    if(e) e.style.width=(c.state==='away'? 100*(1-clamp(c.t/50,0,1)) : 100*(1-clamp(c.t/70,0,1))).toFixed(0)+'%';
+    const tt=$('ct'+c.uid);
+    if(tt&&c.t>0) setText('ct'+c.uid, Math.max(0,c.t).toFixed(0)+'s');
+  }
+}
+function tabBench(){
+  let h='<div class="sechead">Back alley — free parts, slowly</div>'+
+    '<div class="row"><div class="g">🗃️</div><div class="t"><b>Junk crates: '+S.junk+'</b>'+
+    '<small>Other people’s failed gadgets. Free, and the alley never quite runs out.</small></div>'+
+    '<div class="btns"><button class="mini go" data-act="strip"'+(S.junk?'':' disabled')+'>Strip a crate</button></div></div>';
+
+  h+='<div class="sechead">Materials</div><div class="mats">';
+  for(const m of MATS){
+    const n=S.mat[m.id]||0;
+    h+='<div class="mat'+(n?'':' zero')+(m.comp?' comp':'')+'"><span class="e">'+m.e+'</span>'+
+      '<span class="c">'+n+'</span><span class="n">'+esc(m.n)+'</span></div>';
+  }
+  h+='</div><div class="btns" style="justify-content:flex-start;margin:6px 0 0">';
+  for(const m of MATS){ if(!m.buy) continue;
+    h+='<button class="mini" data-act="buymat" data-id="'+m.id+'"'+(S.cash<matCost(m.id)?' disabled':'')+'>'+m.e+' '+money(matCost(m.id))+'</button>';
+  }
+  h+='</div>';
+
+  h+='<div class="sechead">Bench — '+S.bench.length+'/'+benchSlots()+' slots</div>';
+  if(!S.bench.length) h+='<div class="muted">Nothing on the bench.</div>';
+  for(let i=0;i<S.bench.length;i++){
+    const b=S.bench[i];
+    const def=b.comp? MAT(b.id) : GOOD(b.id);
+    h+='<div class="row"><div class="g">'+def.e+'</div><div class="t"><b>'+esc(def.n)+'</b>'+
+      '<small>'+(b.done?'<span style="color:var(--accent)">finished — shelf is full</span>':'building…')+'</small>'+
+      '<div class="bar"><i id="bb'+i+'" style="width:0%"></i></div></div></div>';
+  }
+
+  const comps=COMPS.filter(c=>!c.bp||S.bp[c.bp]);
+  if(comps.length){
+    h+='<div class="sechead">Components — parts for parts</div>';
+    for(const c of comps){
+      const m=MAT(c.id), ok=canAfford(c.r)&&S.bench.length<benchSlots();
+      h+='<div class="row"><div class="g">'+m.e+'</div><div class="t"><b>'+esc(m.n)+'</b>'+
+        '<small>'+recipeStr(c.r)+' · '+(c.time/buildSpeed()).toFixed(1)+'s</small></div>'+
+        '<div class="btns"><button class="mini'+(ok?' go':'')+'" data-act="buildc" data-id="'+c.id+'"'+(ok?'':' disabled')+'>Build</button></div></div>';
+    }
+  }
+
+  h+='<div class="sechead">Goods</div>';
+  for(const g of GOODS){
+    if(g.odd) continue;
+    if(g.bp&&!S.bp[g.bp]){
+      h+='<div class="row" style="opacity:.42"><div class="g">❓</div><div class="t"><b>???</b>'+
+        '<small>needs the '+esc(BP(g.bp).n)+' — Files tab</small></div></div>';
+      continue;
+    }
+    const ok=canAfford(g.r)&&S.bench.length<benchSlots()&&shelfCount()<shelfCap();
+    h+='<div class="row"><div class="g">'+g.e+'</div><div class="t"><b>'+esc(g.n)+'</b>'+
+      '<small>'+recipeStr(g.r)+' → <span class="mono" style="color:var(--accent)">'+money(priceOf(g))+'</span>'+
+      ' · '+g.tags.map(t=>TAGS[t].e).join('')+' · '+(g.time/buildSpeed()).toFixed(1)+'s</small></div>'+
+      '<div class="btns"><button class="mini'+(ok?' go':'')+'" data-act="build" data-id="'+g.id+'"'+(ok?'':' disabled')+'>Build</button></div></div>';
+  }
+
+  if(S.dmg.length){
+    h+='<div class="sechead">Damaged returns</div>';
+    for(const d of S.dmg){
+      const g=GOOD(d.gid);
+      const cost=Math.max(2,Math.round(g.price*0.18*(1-d.cond)));
+      h+='<div class="row"><div class="g">'+g.e+'</div><div class="t"><b>Broken '+esc(g.n)+'</b>'+
+        '<small>'+Math.round(d.cond*100)+'% intact · sells for '+money(priceOf(g))+' once mended</small></div>'+
+        '<div class="btns"><button class="mini go" data-act="refurb" data-id="'+d.uid+'"'+(S.cash<cost?' disabled':'')+'>Refurbish '+money(cost)+'</button>'+
+        '<button class="mini" data-act="stripd" data-id="'+d.uid+'">Strip</button></div></div>';
+    }
+  }
+  return h;
+}
+function tabShelf(){
+  const keys=Object.keys(S.stock);
+  let h='<div style="font-size:12px;color:var(--ink-faint);margin-bottom:9px">Shelf '+shelfCount()+'/'+shelfCap()+
+    ' · walk-in trade '+(S.staff.priya?'run by Priya':'served by you')+' · foot traffic ×'+traffic().toFixed(2)+'</div>';
+  if(!keys.length) h+='<div class="muted">Empty shelves sell nothing, and an empty shop makes villains nervous.</div>';
+  keys.sort((a,b)=>priceOf(GOOD(b))-priceOf(GOOD(a)));
+  for(const id of keys){
+    const g=GOOD(id), d=demOf(g);
+    const arrow=d>1.08?'<span style="color:var(--accent-2)">▲ '+d.toFixed(2)+'× demand</span>':d<0.98?'<span style="color:var(--accent)">▼ '+d.toFixed(2)+'×</span>':'steady';
+    h+='<div class="row"><div class="g">'+g.e+'</div><div class="t"><b>'+esc(g.n)+' ×'+S.stock[id]+'</b>'+
+      '<small><span class="mono" style="color:var(--accent)">'+money(priceOf(g))+'</span> each · '+arrow+' · '+g.tags.map(t=>TAGS[t].e+TAGS[t].n).join(' ')+'</small></div>'+
+      '<div class="btns"><button class="mini go" data-act="sell1" data-id="'+id+'">Sell 1</button></div></div>';
+  }
+  h+='<div class="sechead">What the street wants</div><div class="mats">';
+  for(const t of TAGKEYS){
+    const d=S.dem[t];
+    h+='<div class="mat'+(d>1.08?'':' zero')+'"><span class="e">'+TAGS[t].e+'</span>'+
+      '<span class="c">'+d.toFixed(2)+'</span><span class="n">'+TAGS[t].n+'</span></div>';
+  }
+  h+='</div><div style="font-size:11.5px;color:var(--ink-faint);margin-top:8px">Demand rises when a client succeeds using that kind of kit, and decays back. '+
+    'You are not reading a market — you are reading the consequences of jobs you supplied.</div>';
+  return h;
+}
+function tabClients(){
+  const cs=S.clients.filter(c=>!c.plant);
+  if(!cs.length) return '<div class="muted">No clients yet.</div>';
+  cs.sort((a,b)=>b.rep-a.rep);
+  let h='<div style="font-size:12px;color:var(--ink-faint);margin-bottom:9px">'+
+    'Every line in these files is a consequence of something you sold. Watch a Nobody move.</div>';
+  for(const c of cs){
+    const r=rankOf(c);
+    const st=c.state==='away'? 'out on '+(SCHEMES.find(s=>s.id===(c.job&&c.job.scheme))||{n:'a job'}).n
+      : c.state==='dormant'? 'lying low'
+      : c.state==='atcounter'? 'at your counter'
+      : c.bring&&c.bring.length? 'on their way back to you'
+      : 'on the street';
+    h+='<div class="row" style="align-items:flex-start"><div class="g" style="font-size:22px">'+c.e+'</div><div class="t">'+
+      '<b>'+esc(cliName(c))+' <span class="tag r'+r+'">'+RANKS[r].n+'</span></b>'+
+      '<small>'+esc(c.spec)+' · budget <span class="mono" style="color:var(--accent)">'+money(budgetOf(c))+'</span>'+
+      ' · '+c.runs+' jobs, '+c.wins+' clean · rep '+Math.round(c.rep)+'</small>'+
+      '<small>'+st+(c.t>0&&c.state!=='atcounter'?' · <span id="ct'+c.uid+'">'+c.t.toFixed(0)+'s</span>':'')+
+      ' · prefers '+c.fav.map(t=>TAGS[t].e+TAGS[t].n).join(', ')+'</small>'+
+      ((c.state==='away'||c.state==='dormant')?'<div class="bar"><i id="cb'+c.uid+'" style="width:0%"></i></div>':'')+
+      (c.press>0.08?'<small style="color:var(--warn)">'+esc(c.nem)+' is '+Math.round(c.press*100)+'% interested</small>':'')+
+      (c.hist.length? '<div style="margin-top:5px">'+c.hist.slice(0,4).map(e=>
+        '<div class="histline '+(e.o==='triumph'||e.o==='success'?'good':(e.o==='fiasco'||e.o==='disaster'?'bad':''))+'">Day '+e.day+
+        ' · <b>'+e.o+'</b> — '+esc(e.txt.replace(/<[^>]+>/g,''))+'</div>').join('')+'</div>' : '')+
+      '</div></div>';
+  }
+  return h;
+}
+function upCost(u){ return Math.round(u.c*Math.pow(u.scale||1, S.ups[u.id]||0)); }
+function tabShop(){
+  let h='';
+  const openBay=S.bays.indexOf(null);
+  if(openBay>=0){
+    h+='<div class="sechead">Bay '+(openBay+1)+' — choose its function</div>';
+    for(const b of BAYS){
+      const taken=S.bays.indexOf(b.id)>=0;
+      h+='<button class="up'+(taken?'':' exp')+'" data-act="bay" data-id="'+b.id+'"'+(taken?' disabled':'')+'>'+
+        '<div class="g" style="font-size:20px;width:26px;text-align:center">'+b.e+'</div>'+
+        '<div class="t"><b>'+esc(b.n)+'</b><small>'+esc(b.d)+'</small></div>'+
+        '<div class="cost">'+(taken?'fitted':'free')+'</div></button>';
+    }
+  }
+  h+='<div class="sechead">Premises &amp; people</div>';
+  for(const u of UPS){
+    const lvl=S.ups[u.id]||0;
+    if(lvl>=u.max) continue;
+    if(u.expand&&u.expand!==S.stage+1) continue;
+    const cost=upCost(u);
+    const locked=S.rep<(u.rep||0);
+    const can=!locked&&S.cash>=cost;
+    h+='<button class="up'+(locked?' locked':'')+(u.expand?' exp':'')+'" data-act="up" data-id="'+u.id+'"'+(can?'':' disabled')+'>'+
+      '<div class="t"><b>'+(locked?'???':esc(u.n))+(u.max>1?' <span style="color:var(--ink-faint);font-size:11px">'+(lvl+1)+'/'+u.max+'</span>':'')+'</b>'+
+      '<small>'+(locked?'Repute '+u.rep+' to see this.':esc(u.d))+'</small></div>'+
+      '<div class="cost">'+(locked?'—':money(cost))+'</div></button>';
+  }
+  const done=UPS.filter(u=>(S.ups[u.id]||0)>=u.max);
+  if(done.length) h+='<div style="font-size:11px;color:var(--ink-faint);margin-top:10px">Owned: '+done.map(u=>esc(u.n)).join(' · ')+'</div>';
+  return h;
+}
+function tabFiles(){
+  let h='<div class="sechead">Research — '+num(S.sch)+' schematics</div>';
+  for(const b of BPS){
+    const got=S.bp[b.id];
+    const reqok=!b.req||S.bp[b.req];
+    if(got){ h+='<div class="inter got"><b>'+b.e+' '+esc(b.n)+'</b><p>'+esc(b.d)+'</p></div>'; continue; }
+    if(!reqok){ h+='<div class="inter miss"><b>❓ ???</b><p>Needs '+esc(BP(b.req).n)+' first.</p></div>'; continue; }
+    h+='<button class="up" data-act="res" data-id="'+b.id+'"'+(S.sch<b.c?' disabled':'')+'>'+
+      '<div class="g" style="font-size:19px;width:24px;text-align:center">'+b.e+'</div>'+
+      '<div class="t"><b>'+esc(b.n)+'</b><small>'+esc(b.d)+'</small></div>'+
+      '<div class="cost">'+b.c+' sch</div></button>';
+  }
+  h+='<div class="sechead">Loadout synergies — '+Object.keys(S.syn).length+'/'+SYNS.length+'</div>';
+  for(const s of SYNS){
+    if(S.syn[s.id]) h+='<div class="inter got"><b>'+s.e+' '+esc(s.n)+' <span style="color:var(--accent-2)">+'+Math.round(s.b*100)+'%</span></b><p>'+esc(s.d)+
+      '<br><span style="color:var(--ink-faint)">'+s.need.map(grp=>grp.map(id=>GOOD(id).n).join(' or ')).join(' + ')+'</span></p></div>';
+    else h+='<div class="inter miss"><b>❓ ???</b><p>Some combination of equipment does something neither item does alone. Sell two of the right things to one client.</p></div>';
+  }
+  h+='<div class="sechead">Catalogue — goods built</div><div class="cat">';
+  for(const g of GOODS){
+    const got=S.made[g.id];
+    h+='<div class="cell '+(got?'got':'miss')+'"><span class="e">'+(got?g.e:'❓')+'</span>'+
+      '<span class="n">'+(got?esc(g.n):'???')+'</span><span class="c">'+(got?'T'+g.t:'')+'</span></div>';
+  }
+  h+='</div><div class="sechead">Client archetypes met</div><div class="cat">';
+  for(const a of ARCH){
+    const got=S.arch[a.id];
+    h+='<div class="cell '+(got?'got':'miss')+'" title="'+esc(a.d)+'"><span class="e">'+(got?a.e:'❓')+'</span>'+
+      '<span class="n">'+(got?esc(a.n):'???')+'</span></div>';
+  }
+  for(const nd of NAMED){
+    const got=S.arch[nd.id];
+    h+='<div class="cell '+(got?'got':'miss')+'"><span class="e">'+(got?nd.e:'❓')+'</span>'+
+      '<span class="n">'+(got?esc(nd.n):'???')+'</span></div>';
+  }
+  h+='<div class="cell '+(S.arch.sinistral?'got':'miss')+'"><span class="e">'+(S.arch.sinistral?'🧤':'❓')+'</span>'+
+     '<span class="n">'+(S.arch.sinistral?'The Sinistral':'???')+'</span></div>';
+  h+='</div>';
+  h+='<div style="font-size:12px;color:var(--ink-faint);margin-top:14px">Items sold: '+S.sold+
+    ' · outcome reports read: '+S.reports+' · best single sale: '+money(S.best)+
+    ' · patents &amp; connections: <b style="color:#c1a6d8">'+Math.floor(S.pat)+'</b></div>';
+  return h;
+}
+
+/* ---------- horizon: The Rebrand (named, costed, not reachable) ---------- */
+const PAT_NEED=340;
+function hzOpen(){ return S.pat>=8||S.hzSeen; }
+function hzSig(){ return (hzOpen()?'o':'-')+Math.floor(S.pat)+'|'+(S.pat>=PAT_NEED?1:0); }
+function buildHorizon(){
+  if(!hzOpen()){ $('horizon').innerHTML=''; return; }
+  if(!S.hzSeen){ S.hzSeen=1;
+    setTimeout(()=>toast('Something on the horizon has a number on it',
+      'Every blueprint you research, every synergy you find and every client who becomes somebody adds to <b>Patents &amp; Connections</b>. '+
+      'That is the only thing that survives a rebrand.'),900); }
+  const p=clamp(S.pat/PAT_NEED,0,1);
+  $('horizon').innerHTML='<div class="hz"><h3>The Rebrand</h3>'+
+    '<p>Notoriety is an asset until it is an address. At <b>'+PAT_NEED+' Patents &amp; Connections</b> a very calm accountant '+
+    'will walk you through liquidating Gloves &amp; Goggles on a Friday and opening <i>Aperture &amp; Sons, Theatrical Supplies</i> on the Monday. '+
+    'You lose the premises, the shelf, the staff, the materials and the money. Your <b>patents, your blueprints, your synergies and your '+
+    'contact book</b> come with you — which means the new shop opens already able to build things this one needed nine hours to reach, '+
+    'and the clients you made famous still know where to find you.</p>'+
+    '<div class="bar"><i style="width:'+(p*100).toFixed(1)+'%"></i></div>'+
+    '<div class="num" id="hznum">'+Math.floor(S.pat)+' / '+PAT_NEED+' patents</div>'+
+    '<button class="btn" data-act="prestige"'+(p<1?' disabled':'')+'>'+(p<1?'The accountant is not returning your calls yet':'Rebrand')+'</button>'+
+    '</div>';
+}
+function paintHorizon(){ if(!hzOpen()) return; setText('hznum', Math.floor(S.pat)+' / '+PAT_NEED+' patents'); }
+function doPrestige(){
+  toast('Prototype boundary','This is where the Rebrand would happen: premises, shelf, staff, materials and cash gone; '+
+    'patents, blueprints, synergies and your contact book carried forward — and the next run opens with doomsday components on the shelf '+
+    'instead of masks.','big');
+  log('<b>You close Gloves &amp; Goggles.</b> The prototype stops here — this is the beat the real game has to earn.');
+  S.prestigeSeen=true;
+}
+
+/* ---------- input ---------- */
+document.body.addEventListener('click', e=>{
+  const t=e.target.closest('[data-act]');
+  if(t){ act(t.dataset.act,t); return; }
+  const tab=e.target.closest('#tabs button');
+  if(tab){ S.tab=tab.dataset.tab; SFX.tap(); render(); }
+});
+function act(a,el){
+  const k=S.counter;
+  switch(a){
+    case 'strip': stripJunk(el); break;
+    case 'buymat': buyMat(el.dataset.id,1,el); break;
+    case 'build': startBuild(el.dataset.id,false); break;
+    case 'buildc': startBuild(el.dataset.id,true); break;
+    case 'sell1': { const p=sellOne(el.dataset.id,el); if(p!=null) log('Sold a '+esc(GOOD(el.dataset.id).n)+' over the counter for <b>'+money(p)+'</b>.'); break; }
+    case 'refurb': { const d=S.dmg.find(x=>x.uid==el.dataset.id); if(d) refurb(d); break; }
+    case 'stripd': { const d=S.dmg.find(x=>x.uid==el.dataset.id); if(d) stripDmg(d); break; }
+    case 'res': research(el.dataset.id); break;
+    case 'more': if(k&&k.kind==='client'){ const id=el.dataset.id; k.sel[id]=(k.sel[id]||0)+1; SFX.tap(); } break;
+    case 'less': if(k&&k.kind==='client'){ const id=el.dataset.id; k.sel[id]=Math.max(0,(k.sel[id]||0)-1); if(!k.sel[id]) delete k.sel[id]; SFX.tap(); } break;
+    case 'sell': closeSale(false); break;
+    case 'back': closeSale(true); break;
+    case 'away': turnAway(); break;
+    case 'buyback': buyBack(true); break;
+    case 'nobuyback': buyBack(false); break;
+    case 'takeloot': takeLoot(true); break;
+    case 'refuseloot': takeLoot(false); break;
+    case 'ev': resolveEvent(el.dataset.c); break;
+    case 'launder': launder(); break;
+    case 'shred': shred(); break;
+    case 'stocktake': stocktake(); break;
+    case 'bay': { const i=S.bays.indexOf(null);
+      if(i>=0&&S.bays.indexOf(el.dataset.id)<0){ S.bays[i]=el.dataset.id; SFX.reveal();
+        const b=BAYD(el.dataset.id);
+        toast(b.e+' '+b.n+' fitted','<span>'+esc(b.d)+'</span>','good');
+        log('Bay '+(i+1)+' is now the <b>'+esc(b.n)+'</b>.'); } break; }
+    case 'up': buyUp(el.dataset.id); break;
+    case 'prestige': doPrestige(); break;
+  }
+  render();
+}
+function buyUp(id){
+  const u=UP(id); if(!u) return;
+  const lvl=S.ups[id]||0; if(lvl>=u.max) return;
+  if(S.rep<(u.rep||0)) return;
+  const cost=upCost(u);
+  if(S.cash<cost){ SFX.bad(); return; }
+  addCash(-cost,$('s-cash')); S.ups[id]=lvl+1;
+  if(u.buy) u.buy();
+  if(u.staff) S.staff[u.staff]=(S.staff[u.staff]||0)+1;
+  if(u.expand){
+    S.stage=u.expand;
+    S.bays.push(null); if(u.expand===3) S.bays.push(null);
+    addPat(6);
+    toast(u.expand===2?'🏬 Specialty Store':'🏭 The Warehouse',
+      u.expand===2? 'The wall is gone. There is a bay in there and it is empty until you decide what it is. Pick its function in Premises.'
+                  : 'Two bays and a loading dock. Nobody on this estate reads a sign, which is the point.','big');
+  }
+  SFX.reveal();
+  log('Bought <b>'+esc(u.n)+'</b>.');
+  if(id==='ozzy') toast('Ozzy','"You want them apart? They’ll be apart." He strips crates now, unasked, forever. Your hands are free for the counter.');
+  if(id==='priya') toast('Priya','She runs the walk-in trade. Your attention belongs on the people with briefs, not the people buying one mask.');
+  if(id==='sheila') toast('Sheila','She stands by the door and looks at shoes. Undercover customers get flagged before you sell them anything, and every sale runs cooler.');
+  if(id==='tick') toast('Tick','She takes damaged returns apart on her own and writes down what she learns.');
+}
+$('mutebtn').onclick=()=>{ S.muted=!S.muted; if(!S.muted) SFX.tap(); render(); save(); };
+$('logtoggle').onclick=()=>{ const lf=$('logfull'); lf.classList.toggle('open');
+  lf.innerHTML=LOG.map(x=>'<div>'+x+'</div>').join(''); };
+$('helpbtn').onclick=()=>{
+  toast('Gloves &amp; Goggles',
+    '<b>Strip</b> junk crates for materials. <b>Build</b> masks, rope and smoke bombs at the bench and put them on the shelf. '+
+    'When a villain arrives with a brief, sell them a <b>loadout</b> that covers every need on it — the odds bar is honest. '+
+    'Their scheme resolves off screen; the <b>report</b> moves their reputation, their budget and what the street wants, and sends loot, '+
+    'wreckage or a stolen blueprint back to your counter. Better clients pay more and raise <b>Heat</b>. Heat is a bill you choose how to pay.');
+};
+
+/* ---------- save / load ---------- */
+function save(){ try{ S.lastReal=Date.now(); localStorage.setItem(SAVE_KEY,JSON.stringify(S)); }catch(e){} }
+function load(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const o=JSON.parse(raw);
+    if(!o||o.v!==1) return false;
+    S=Object.assign(freshState(),o);
+    for(const m of MATS) if(typeof S.mat[m.id]!=='number') S.mat[m.id]=0;
+    for(const t of TAGKEYS) if(typeof S.dem[t]!=='number') S.dem[t]=1;
+    S.counter=null; S.raid=0; S.closed=0; S.evQ=[];
+    for(const c of S.clients) if(c.state==='atcounter'){ c.state='browsing'; c.t=5; }
+    /* limited offline progress: capped at 2h, half rate, only what is automated */
+    const away=clamp((Date.now()-(o.lastReal||Date.now()))/1000,0,7200);
+    if(away>30){
+      let earned=0, sold=0;
+      const rate=(S.staff.priya?0.16:0.05)*(hasBay('disp')?2:1)*traffic()*0.5;
+      const keys=Object.keys(S.stock);
+      for(const id of keys){
+        let n=S.stock[id];
+        const expect=Math.min(n, Math.floor(rate*away*0.35));
+        if(expect>0){ S.stock[id]-=expect; if(S.stock[id]<=0) delete S.stock[id];
+          earned+=expect*priceOf(GOOD(id)); sold+=expect; }
+      }
+      if(S.staff.ozzy) S.junk=Math.min(3+S.up.alley,S.junk+2);
+      S.heat=Math.max(0,S.heat-0.16*away*0.5);
+      if(earned){ S.cash+=earned;
+        setTimeout(()=>toast('While the shutters were down','The walk-in trade cleared '+sold+' item'+(sold===1?'':'s')+' for '+money(earned)+
+          '. Half rate, capped at two hours — nobody schemes while you are asleep, which is rather the point.'),700); }
+    }
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ---------- boot ---------- */
+if(!load()){
+  S=freshState();
+  S.clients.push(newNamed('gary'));
+  S.arch.gary=1;
+  S.mat.cloth=2; S.mat.metal=1;
+  setTimeout(()=>toast('Gloves &amp; Goggles',
+    'Forty dollars, one workbench and an alley full of other people’s failed gadgets. '+
+    '<b>Strip a crate</b> for parts, build a <b>Domino Mask</b>, put it on the shelf. '+
+    'Somebody will be along shortly who thinks he is about to become famous.'),500);
+  log('You open the shutters. Three crates of junk and a man called Gary.');
+}
+let last=performance.now(), acc=0, saveT=0;
+function frame(){
+  const now=performance.now();
+  let dt=(now-last)/1000; last=now;
+  if(dt>0.5) dt=0.5; if(dt<0) dt=0;
+  acc+=dt;
+  let steps=0;
+  while(acc>=TICK&&steps<40){ sim(TICK); acc-=TICK; steps++; }
+  if(acc>TICK*40) acc=0;
+  saveT+=dt; if(saveT>5){ saveT=0; save(); }
+  render();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.addEventListener('beforeunload',save);
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) save(); });
+</script>
+</body>
+</html>
